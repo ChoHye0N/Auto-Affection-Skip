@@ -3,17 +3,13 @@
 
 using namespace cv;
 
-// 메인화면 -> 모모톡 -> 메시지 -> 안 읽은 메시지
-// -> 답장하기 -> 인연 이벤트 -> 인연 스토리 입장
-// -> MENU 클릭 -> (>>) 클릭 -> 요약 확인 -> 보상 획득 클릭
-// -> 반복
-
 extern "C" __declspec(dllexport)
 ButtonInfo FindButtonAndClick(const char* templatePath, double threshold = 0.9) {
     ButtonInfo info = { 0, 0, false };
 
     Mat screen = CaptureScreen();
     Mat button = cv::imread(templatePath);
+
     if (button.empty()) return info;
 
     Mat result;

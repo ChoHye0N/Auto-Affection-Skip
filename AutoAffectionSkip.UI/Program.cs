@@ -4,8 +4,17 @@ namespace AutoAffectionSkip.UI
 {
     internal static class Program
     {
+        // 디버그 콘솔 출력용
         [DllImport("kernel32.dll")]
         static extern bool AllocConsole();
+
+        [DllImport(
+            "AutoAffectionSkip.Core.dll", 
+            CallingConvention = CallingConvention.Cdecl
+            )]
+        public static extern ButtonInfo FindButtonAndClick(
+            string templatePath, double threshold
+            );
 
         [STAThread]
         static void Main()
@@ -23,7 +32,8 @@ namespace AutoAffectionSkip.UI
 
                 if (info.found)
                 {
-                    Console.WriteLine($"Button clicked at ({info.x},{info.y})");
+                    Console.WriteLine($"Button clicked at " +
+                        $"({info.x},{info.y}) [Score: {info.score}]");
                 }
 
                 else
@@ -39,9 +49,6 @@ namespace AutoAffectionSkip.UI
             // UI 시작
             Application.Run(new Form1());
         }
-
-        [DllImport("AutoAffectionSkip.Core.dll", CallingConvention = CallingConvention.Cdecl)]
-        public static extern ButtonInfo FindButtonAndClick(string templatePath, double threshold);
     }
 
     struct ButtonInfo
@@ -49,5 +56,6 @@ namespace AutoAffectionSkip.UI
         public int x, y;
         [MarshalAs(UnmanagedType.I1)]
         public bool found;
+        public double score;
     }
 }

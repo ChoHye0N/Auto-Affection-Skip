@@ -1,10 +1,10 @@
-using System.Runtime.InteropServices;
+ï»¿using System.Runtime.InteropServices;
 
 namespace AutoAffectionSkip.UI
 {
     internal static class Program
     {
-        // µð¹ö±× ÄÜ¼Ö Ãâ·Â¿ë
+        // ë””ë²„ê·¸ ì½˜ì†” ì¶œë ¥ìš©
         [DllImport("kernel32.dll")]
         static extern bool AllocConsole();
 
@@ -26,7 +26,7 @@ namespace AutoAffectionSkip.UI
                 "menu_btn.png"
             );
 
-            // DLL È£Ãâ Å×½ºÆ®
+            // DLL í˜¸ì¶œ í…ŒìŠ¤íŠ¸
             try
             {
                 ButtonInfo info = FindButtonAndClick(imgPath, 0.9);
@@ -44,10 +44,10 @@ namespace AutoAffectionSkip.UI
             }
             catch (Exception ex)
             {
-                Console.WriteLine("DLL È£Ãâ Áß ¿À·ù: " + ex.Message);
+                Console.WriteLine("DLL í˜¸ì¶œ ì¤‘ ì˜¤ë¥˜: " + ex.Message);
             }
 
-            // UI ½ÃÀÛ
+            // UI ì‹œìž‘
             Application.Run(new Form1());
         }
     }

@@ -1,23 +1,23 @@
-#include "pch.h"
+ï»¿#include "pch.h"
 #include "macro.h"
 
 using namespace cv;
 
 extern "C" __declspec(dllexport)
 ButtonInfo FindButtonAndClick(const char* templatePath, double threshold = 0.9) {
-    // ±âº» º¯¼ö ¼³Á¤
+    // ê¸°ë³¸ ë³€ìˆ˜ ì„¤ì •
     ButtonInfo info = { 0, 0, false };
     Mat button, alphaMask, result;
 
-    // Ã¢ ÀÌ¸§ ¹Ù²ğ °æ¿ì ÀÎÀÚ ¼öÁ¤
+    // ì°½ ì´ë¦„ ë°”ë€” ê²½ìš° ì¸ì ìˆ˜ì •
     Mat screen = CaptureGameWindow("Blue Archive");
 
-    // ¾ËÆÄ Ã¤³Î Æ÷ÇÔ ÀÌ¹ÌÁö ºÒ·¯¿À±â
+    // ì•ŒíŒŒ ì±„ë„ í¬í•¨ ì´ë¯¸ì§€ ë¶ˆëŸ¬ì˜¤ê¸°
     Mat buttonWithAlpha = cv::imread(templatePath, cv::IMREAD_UNCHANGED);
     if (buttonWithAlpha.empty())
         return info;
 
-    // ¾ËÆÄ Ã¤³Î ºĞ¸®
+    // ì•ŒíŒŒ ì±„ë„ ë¶„ë¦¬
     if (buttonWithAlpha.channels() == 4) {
         std::vector<Mat> channels;
         split(buttonWithAlpha, channels);
@@ -29,12 +29,12 @@ ButtonInfo FindButtonAndClick(const char* templatePath, double threshold = 0.9) 
         button = buttonWithAlpha;
     }
 
-    // ¾ËÆÄ ¸¶½ºÅ© ÀÌÁøÈ­
+    // ì•ŒíŒŒ ë§ˆìŠ¤í¬ ì´ì§„í™”
     if (!alphaMask.empty()) {
         cv::threshold(alphaMask, alphaMask, 1, 255, THRESH_BINARY);
     }
 
-    // ¸¶½ºÅ© Áö¿ø ¸ÅÄª ¹æ½Ä »ç¿ë
+    // ë§ˆìŠ¤í¬ ì§€ì› ë§¤ì¹­ ë°©ì‹ ì‚¬ìš©
     if (!alphaMask.empty()) {
         matchTemplate(
             screen,
@@ -63,7 +63,7 @@ ButtonInfo FindButtonAndClick(const char* templatePath, double threshold = 0.9) 
         info.x = maxLoc.x + button.cols / 2;
         info.y = maxLoc.y + button.rows / 2;
 
-        // ¸¶¿ì½º Å¬¸¯
+        // ë§ˆìš°ìŠ¤ í´ë¦­
         INPUT input[2] = {};
         input[0].type = INPUT_MOUSE;
         input[0].mi.dwFlags = MOUSEEVENTF_MOVE | MOUSEEVENTF_ABSOLUTE;

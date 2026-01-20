@@ -5,9 +5,12 @@ using namespace cv;
 
 extern "C" __declspec(dllexport)
 ButtonInfo FindButtonAndClick(const char* templatePath, double threshold = 0.9) {
+    // 기본 변수 설정
     ButtonInfo info = { 0, 0, false };
+    Mat button, alphaMask, result;
 
-    Mat screen = CaptureScreen();
+    // 창 이름 바뀔 경우 인자 수정
+    Mat screen = CaptureGameWindow("Blue Archive");
 
     // 알파 채널 포함 이미지 불러오기
     Mat buttonWithAlpha = cv::imread(templatePath, cv::IMREAD_UNCHANGED);
@@ -15,7 +18,6 @@ ButtonInfo FindButtonAndClick(const char* templatePath, double threshold = 0.9) 
         return info;
 
     // 알파 채널 분리
-    Mat button, alphaMask;
     if (buttonWithAlpha.channels() == 4) {
         std::vector<Mat> channels;
         split(buttonWithAlpha, channels);
@@ -31,8 +33,6 @@ ButtonInfo FindButtonAndClick(const char* templatePath, double threshold = 0.9) 
     if (!alphaMask.empty()) {
         cv::threshold(alphaMask, alphaMask, 1, 255, THRESH_BINARY);
     }
-
-    Mat result;
 
     // 마스크 지원 매칭 방식 사용
     if (!alphaMask.empty()) {

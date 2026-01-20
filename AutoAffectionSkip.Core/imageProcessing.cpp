@@ -6,28 +6,27 @@
 
 using namespace cv;
 
-Mat CaptureScreen() {
-    int screenX = GetSystemMetrics(SM_CXSCREEN);
-    int screenY = GetSystemMetrics(SM_CYSCREEN);
+// 창 제목을 인자로 받아 해당 영역만 캡처
+Mat CaptureGameWindow(const char* windowName) {
+    HWND hwnd = FindWindowA("UnityWndClass", windowName);
+    if (!hwnd) return Mat();
 
-    HDC hScreenDC = GetDC(NULL);
-    HDC hMemoryDC = CreateCompatibleDC(hScreenDC);
+    RECT rect;
+    // 모니터 기준 창 좌표
+    GetWindowRect(hwnd, &rect); 
 
-    HBITMAP hBitmap = CreateCompatibleBitmap(hScreenDC, screenX, screenY);
+    int width = rect.right - rect.left, height = rect.bottom - rect.top;
+
+    HDC hScreenDC = GetDC(NULL), hMemoryDC = CreateCompatibleDC(hScreenDC);
+    HBITMAP hBitmap = CreateCompatibleBitmap(hScreenDC, width, height);
     SelectObject(hMemoryDC, hBitmap);
 
-    BitBlt(hMemoryDC, 0, 0, screenX, screenY, hScreenDC, 0, 0, SRCCOPY);
+    // 창의 시작점부터 캡처
+    BitBlt(hMemoryDC, 0, 0, width, height, hScreenDC, rect.left, rect.top, SRCCOPY);
 
-    BITMAPINFOHEADER bi = {};
-    bi.biSize = sizeof(BITMAPINFOHEADER);
-    bi.biWidth = screenX;
-    bi.biHeight = -screenY;
-    bi.biPlanes = 1;
-    bi.biBitCount = 24;
-    bi.biCompression = BI_RGB;
-
-    Mat mat(screenY, screenX, CV_8UC3);
-    GetDIBits(hMemoryDC, hBitmap, 0, screenY, mat.data, (BITMAPINFO*)&bi, DIB_RGB_COLORS);
+    BITMAPINFOHEADER bi = { sizeof(BITMAPINFOHEADER), width, -height, 1, 24, BI_RGB };
+    Mat mat(height, width, CV_8UC3);
+    GetDIBits(hMemoryDC, hBitmap, 0, height, mat.data, (BITMAPINFO*)&bi, DIB_RGB_COLORS);
 
     DeleteObject(hBitmap);
     DeleteDC(hMemoryDC);

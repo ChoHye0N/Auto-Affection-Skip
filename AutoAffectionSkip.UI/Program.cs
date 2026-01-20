@@ -8,13 +8,10 @@ namespace AutoAffectionSkip.UI
         [DllImport("kernel32.dll")]
         static extern bool AllocConsole();
 
-        [DllImport(
-            "AutoAffectionSkip.Core.dll", 
-            CallingConvention = CallingConvention.Cdecl
-            )]
+        [DllImport("AutoAffectionSkip.Core.dll", CallingConvention = CallingConvention.Cdecl)]
         public static extern ButtonInfo FindButtonAndClick(
             string templatePath, double threshold
-            );
+        );
 
         [STAThread]
         static void Main()
@@ -22,8 +19,12 @@ namespace AutoAffectionSkip.UI
             AllocConsole();
             ApplicationConfiguration.Initialize();
 
-            string baseDir = AppContext.BaseDirectory;
-            string imgPath = Path.Combine(baseDir, "assets", "images", "menu_btn.png");
+            string imgPath = Path.Combine(
+                AppContext.BaseDirectory,
+                "assets",
+                "images",
+                "menu_btn.png"
+            );
 
             // DLL 호출 테스트
             try

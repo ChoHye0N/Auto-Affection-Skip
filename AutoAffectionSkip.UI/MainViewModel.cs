@@ -1,10 +1,6 @@
-﻿using System;
-using System.Collections.Generic;
-using System.Collections.ObjectModel;
+﻿using System.Collections.ObjectModel;
 using System.ComponentModel;
 using System.Runtime.CompilerServices;
-using System.Threading;
-using System.Threading.Tasks;
 using System.Windows;
 using System.Windows.Input;
 
@@ -13,10 +9,15 @@ namespace AutoAffectionSkip.UI
     public class MainViewModel : INotifyPropertyChanged
     {
         private const double THRESHOLD = 0.95;
+
+        // 함수 relay 횟수 확인 변수
         private int _countSecond = 0;
+
+        // 메시지 관련 변수
         private ButtonInfo[] _messageList = new ButtonInfo[5];
         private int _messageCount = 0;
         private bool _messageCycle = false;
+
         private readonly Dictionary<string, string> _images;
         private MacroStep _currentStep = MacroStep.Idle;
         private CancellationTokenSource? _cts;
@@ -25,7 +26,11 @@ namespace AutoAffectionSkip.UI
         public bool IsRunning
         {
             get => _isRunning;
-            set { _isRunning = value; OnPropertyChanged(); OnPropertyChanged(nameof(IsStartEnabled)); }
+            set {
+                _isRunning = value;
+                OnPropertyChanged();
+                OnPropertyChanged(nameof(IsStartEnabled));
+            }
         }
 
         public bool IsStartEnabled => !IsRunning;
@@ -64,7 +69,7 @@ namespace AutoAffectionSkip.UI
             _cts = new CancellationTokenSource();
             _currentStep = MacroStep.CheckMain;
 
-            WriteLog(">>> 매크로 시작");
+            WriteLog("▶ 매크로 시작");
 
             try
             {
@@ -73,7 +78,7 @@ namespace AutoAffectionSkip.UI
             }
             catch (OperationCanceledException)
             {
-                WriteLog("= 매크로 중지 =");
+                WriteLog("■ 매크로 중지");
             }
             catch (Exception ex)
             {
@@ -145,7 +150,7 @@ namespace AutoAffectionSkip.UI
             }
             else
             {
-                WriteLog("안 읽은 메시지 없음.");
+                WriteLog("안 읽은 메시지 없음!");
                 _currentStep = MacroStep.Finish;
             }
         }
@@ -166,9 +171,10 @@ namespace AutoAffectionSkip.UI
         {
             await Task.Delay(1000, token);
 
+            // 처음 인식한 메시지 개수만큼 돌았을 때 확인
             if (_messageCycle)
             {
-                WriteLog("읽을 메시지 없음, 나가는 중...");
+                WriteLog("읽을 메시지 없음, 메인화면으로 복귀중...");
                 NativeMethods.KeyPressScan(0x01);
 
                 _messageCycle = false;
@@ -187,7 +193,7 @@ namespace AutoAffectionSkip.UI
 
                 if (_messageCount == 0)
                 {
-                    WriteLog("읽을 메시지 없음, 나가는 중...");
+                    WriteLog("읽을 메시지 없음, 매크로 종료!");
                     NativeMethods.KeyPressScan(0x01);
 
                     StopMacro();
@@ -196,8 +202,8 @@ namespace AutoAffectionSkip.UI
                 if (_messageCount > 0)
                 {
                     // 화면 위쪽부터 순서대로
-                    Array.Sort(_messageList, 0, _messageCount, Comparer<ButtonInfo>.Create((a, b) => a.y.CompareTo(b.y)));
                     WriteLog($"{_messageCount}개의 안 읽은 메시지를 발견!");
+                    Array.Sort(_messageList, 0, _messageCount, Comparer<ButtonInfo>.Create((a, b) => a.y.CompareTo(b.y)));
                 }
             }
 
@@ -295,9 +301,9 @@ namespace AutoAffectionSkip.UI
         {
             while (!token.IsCancellationRequested)
             {
-                var res = NativeMethods.FindImage(_images[imgName], THRESHOLD);
-
                 WriteLog($"[{imgName}] 이미지 찾는 중...");
+
+                var res = NativeMethods.FindImage(_images[imgName], THRESHOLD);
 
                 if (res.found) {
                     NativeMethods.KeyPressScan(key);
@@ -311,11 +317,15 @@ namespace AutoAffectionSkip.UI
         }
         #endregion
 
+        // UI 데이터 바인딩 시 값 변경을 알리기 위한 이벤트
         public event PropertyChangedEventHandler? PropertyChanged;
+
+        // 프로퍼티 값이 변경될 때 UI에 갱신을 요청하는 메서드
         protected void OnPropertyChanged([CallerMemberName] string? name = null)
             => PropertyChanged?.Invoke(this, new PropertyChangedEventArgs(name));
     }
 
+    // UI의 Command 바인딩을 처리하기 위한 클래스
     public class RelayCommand : ICommand
     {
         private readonly Action<object?> _execute;

@@ -1,9 +1,4 @@
-﻿using System;
-using System.Collections.Generic;
-using System.Linq;
-using System.Runtime.InteropServices;
-using System.Text;
-using System.Threading.Tasks;
+﻿using System.Runtime.InteropServices;
 
 namespace AutoAffectionSkip.UI
 {
@@ -18,7 +13,7 @@ namespace AutoAffectionSkip.UI
     public enum MacroStep
     {
         Idle,               // 시작 대기
-        CheckMain,      // 메인화면
+        CheckMain,          // 메인화면
         EnterMomotalk,      // 모모톡 선택 / 메시지 창 열기
         ScanMessages,       // 화면에 보이는 메시지가 있는가?
         ProcessMessage,     // 읽을 메시지 선택 -> 채팅창 -> 답장 -> 스토리 입장

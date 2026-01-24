@@ -10,6 +10,13 @@
   </PropertyGroup>
 
   <ItemGroup>
+    <Compile Remove="bin\Debug\**" />
+    <EmbeddedResource Remove="bin\Debug\**" />
+    <None Remove="bin\Debug\**" />
+    <Page Remove="bin\Debug\**" />
+  </ItemGroup>
+
+  <ItemGroup>
     <None Update="assets\images\bond_event_logo.png">
       <CopyToOutputDirectory>Always</CopyToOutputDirectory>
     </None>
@@ -61,10 +68,6 @@
     <None Update="assets\images\summary_logo.jpg">
       <CopyToOutputDirectory>Always</CopyToOutputDirectory>
     </None>
-  </ItemGroup>
-
-  <ItemGroup>
-    <Folder Include="bin\Debug\net8.0-windows\" />
   </ItemGroup>
 
   <ItemGroup>

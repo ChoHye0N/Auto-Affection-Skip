@@ -14,6 +14,7 @@ namespace AutoAffectionSkip.UI
         public bool found;             // 이미지 찾음 여부
         public double score;           // 이미지 정확도
     }
+
     public enum MacroStep
     {
         Idle,               // 시작 대기

@@ -29,3 +29,5 @@ extern "C" __declspec(dllexport)
 ButtonInfo FindImage(const char* templatePath, double threshold);
 extern "C" __declspec(dllexport) void MouseClick(int x, int y);
 extern "C" __declspec(dllexport) void KeyPressScan(WORD scan);
+extern "C" __declspec(dllexport)
+int FindMultiImage(const char* templatePath, double threshold, ButtonInfo* outResults, int maxCount);

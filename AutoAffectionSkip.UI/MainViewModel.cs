@@ -14,6 +14,9 @@ namespace AutoAffectionSkip.UI
     {
         private const double THRESHOLD = 0.95;
         private int _countSecond = 0;
+        private ButtonInfo[] _messageList = new ButtonInfo[5];
+        private int _messageCount = 0;
+        private bool _messageCycle = false;
         private readonly Dictionary<string, string> _images;
         private MacroStep _currentStep = MacroStep.Idle;
         private CancellationTokenSource? _cts;
@@ -40,11 +43,16 @@ namespace AutoAffectionSkip.UI
 
         private void WriteLog(string message)
         {
-            //Dispatcher 비동기 호출로 UI 얼어붙음 방지
+            if (Application.Current == null) return;
+
             Application.Current.Dispatcher.BeginInvoke(new Action(() =>
             {
-                Logs.Add($"[{DateTime.Now:HH:mm:ss}] {message}");
-                if (Logs.Count > 100) Logs.RemoveAt(0);
+                try
+                {
+                    Logs.Add($"[{DateTime.Now:HH:mm:ss}] {message}");
+                    if (Logs.Count > 100) Logs.RemoveAt(0);
+                }
+                catch (Exception) { /* 로그 기록 중 발생하는 사소한 오류 무시 */ }
             }));
         }
 
@@ -55,6 +63,7 @@ namespace AutoAffectionSkip.UI
             IsRunning = true;
             _cts = new CancellationTokenSource();
             _currentStep = MacroStep.CheckMain;
+
             WriteLog(">>> 매크로 시작");
 
             try
@@ -88,11 +97,15 @@ namespace AutoAffectionSkip.UI
 
         private void Cleanup()
         {
-            IsRunning = false;
+            // 로그를 먼저 찍고 상태를 변경해야 오류가 발생안함
+            WriteLog(">>> 매크로 상태 초기화 완료");
+
+            _currentStep = MacroStep.Idle;
             _cts?.Dispose();
             _cts = null;
-            _currentStep = MacroStep.Idle;
-            WriteLog(">>> 매크로 상태 초기화 완료");
+
+            // IsRunning은 가장 마지막에 변경
+            Application.Current.Dispatcher.Invoke(() => IsRunning = false);
         }
 
         // void 대신 async Task를 사용하여 내부에서 await Task.Delay 사용
@@ -125,8 +138,16 @@ namespace AutoAffectionSkip.UI
 
             var res = NativeMethods.FindImage(_images["momotalk_icon"], THRESHOLD);
 
-            if (res.found) { NativeMethods.MouseClick(res.x, res.y); _currentStep = MacroStep.EnterMomotalk; }
-            else { WriteLog("안 읽은 메시지 없음."); _currentStep = MacroStep.Finish; }
+            if (res.found)
+            {
+                NativeMethods.MouseClick(res.x, res.y);
+                _currentStep = MacroStep.EnterMomotalk;
+            }
+            else
+            {
+                WriteLog("안 읽은 메시지 없음.");
+                _currentStep = MacroStep.Finish;
+            }
         }
 
         private async Task EnterMomotalkStep(CancellationToken token)
@@ -134,42 +155,87 @@ namespace AutoAffectionSkip.UI
             await Task.Delay(1500, token);
             var res = NativeMethods.FindImage(_images["message_icon"], THRESHOLD);
 
-            if (res.found) { NativeMethods.MouseClick(res.x, res.y); _currentStep = MacroStep.ScanMessages; }
+            if (res.found)
+            {
+                NativeMethods.MouseClick(res.x, res.y);
+                _currentStep = MacroStep.ScanMessages;
+            }
         }
 
         private async Task ScanMessagesStep(CancellationToken token)
         {
             await Task.Delay(1000, token);
-            var res = NativeMethods.FindImage(_images["message_count_box"], THRESHOLD);
 
-            if (res.found) { NativeMethods.MouseClick(res.x, res.y); _currentStep = MacroStep.ProcessMessage; }
-            else
+            if (_messageCycle)
             {
-                WriteLog("읽을 메시지 없음. 나가는 중...");
-                var exit = NativeMethods.FindImage(_images["exit_momotalk"], THRESHOLD);
+                WriteLog("읽을 메시지 없음, 나가는 중...");
+                NativeMethods.KeyPressScan(0x01);
 
-                if (exit.found) NativeMethods.MouseClick(exit.x, exit.y);
+                _messageCycle = false;
+                _currentStep = MacroStep.CheckMain;
 
-                _currentStep = MacroStep.Finish;
+                return;
+            }
+
+            // 메시지 목록이 비어있을 때만 새로 스캔
+            if (_messageCount == 0)
+            {
+                // 배열 초기화
+                Array.Clear(_messageList, 0, _messageList.Length);
+
+                _messageCount = NativeMethods.FindMultiImage(_images["message_count_box"], 0.99, _messageList, _messageList.Length);
+
+                if (_messageCount == 0)
+                {
+                    WriteLog("읽을 메시지 없음, 나가는 중...");
+                    NativeMethods.KeyPressScan(0x01);
+
+                    StopMacro();
+                }
+
+                if (_messageCount > 0)
+                {
+                    // 화면 위쪽부터 순서대로
+                    Array.Sort(_messageList, 0, _messageCount, Comparer<ButtonInfo>.Create((a, b) => a.y.CompareTo(b.y)));
+                    WriteLog($"{_messageCount}개의 안 읽은 메시지를 발견!");
+                }
+            }
+
+            if (_messageCount > 0)
+            {
+                // 위에서부터 순서대로 클릭하기 위해 0번 인덱스 사용
+                var res = _messageList[0];
+
+                NativeMethods.MouseClick(res.x, res.y);
+                _currentStep = MacroStep.ProcessMessage;
+
+                // 사용한 항목 제거 (앞으로 당기기)
+                for (int i = 0; i < _messageCount - 1; i++)
+                {
+                    _messageList[i] = _messageList[i + 1];
+                }
+                _messageCount--;
+
+                if (_messageCount == 0) _messageCycle = true;
+
+                await Task.Delay(500, token);
             }
         }
 
         private async Task ProcessConversation(CancellationToken token)
         {
-            // TODO: 메시지 5개 배열에 저장 후, 순차적으로 확인하는 것으로 변경하기
-
-            WriteLog("[2] 대화/답장 처리 중...");
+            WriteLog("[2] 메시지 읽기 및 답장 중...");
 
             while (!token.IsCancellationRequested)
             {
-                if (NativeMethods.FindImage(_images["message_reply_logo"], 0.98).found)
+                if (NativeMethods.FindImage(_images["message_reply_logo"], 0.99).found)
                 {
                     NativeMethods.KeyPressScan(0x02);
                     _countSecond = 0;
                     await Task.Delay(800, token);
                 }
 
-                if (NativeMethods.FindImage(_images["message_story_enter_btn"], 0.98).found)
+                if (NativeMethods.FindImage(_images["message_story_enter_btn"], 0.99).found)
                 {
                     NativeMethods.KeyPressScan(0x39);
                     _countSecond = 0;
@@ -189,7 +255,7 @@ namespace AutoAffectionSkip.UI
 
             if (_currentStep == MacroStep.ScanMessages)
             {
-                WriteLog("새로운 메시지 선택");
+                WriteLog("＃ 새로운 메시지 선택");
                 return;
             }
 

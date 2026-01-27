@@ -7,13 +7,18 @@
     <ImplicitUsings>enable</ImplicitUsings>
     <UseWPF>true</UseWPF>
     <Platforms>AnyCPU;x64</Platforms>
+    <AssemblyName>AutoAffectionSkip</AssemblyName>
   </PropertyGroup>
 
   <ItemGroup>
     <Compile Remove="bin\Debug\**" />
+    <Compile Remove="bin\x64\Debug\**" />
     <EmbeddedResource Remove="bin\Debug\**" />
+    <EmbeddedResource Remove="bin\x64\Debug\**" />
     <None Remove="bin\Debug\**" />
+    <None Remove="bin\x64\Debug\**" />
     <Page Remove="bin\Debug\**" />
+    <Page Remove="bin\x64\Debug\**" />
   </ItemGroup>
 
   <ItemGroup>
@@ -71,7 +76,7 @@
   </ItemGroup>
 
   <ItemGroup>
-    <None Include="bin\x64\Debug\net8.0-windows\AutoAffectionSkip.Core.dll">
+    <None Include="bin\x64\Release\net8.0-windows\AasCore.dll">
       <CopyToOutputDirectory>Always</CopyToOutputDirectory>
     </None>
   </ItemGroup>

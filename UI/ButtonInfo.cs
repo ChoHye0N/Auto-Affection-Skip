@@ -1,6 +1,6 @@
 ﻿using System.Runtime.InteropServices;
 
-namespace AutoAffectionSkip.UI
+namespace UI
 {
     public struct ButtonInfo
     {

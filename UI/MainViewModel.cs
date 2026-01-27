@@ -4,7 +4,7 @@ using System.Runtime.CompilerServices;
 using System.Windows;
 using System.Windows.Input;
 
-namespace AutoAffectionSkip.UI
+namespace UI
 {
     public class MainViewModel : INotifyPropertyChanged
     {

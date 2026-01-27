@@ -1,6 +1,6 @@
 ﻿using System.IO;
 
-namespace AutoAffectionSkip.UI
+namespace UI
 {
     public static class ImagePaths
     {

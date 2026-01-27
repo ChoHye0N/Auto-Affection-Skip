@@ -1,6 +1,6 @@
 ﻿using System.Windows;
 
-namespace AutoAffectionSkip.UI
+namespace UI
 {
     public partial class MainWindow : Window
     {

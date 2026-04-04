@@ -11,6 +11,7 @@ ButtonInfo FindImage(const char* templatePath, double threshold) {
     Mat button, alphaMask, result;
 
     // 게임 화면 캡처
+    /* 윈도우 창 이름 바뀌면 수정 필요함 */
     Mat screen = CaptureGameWindow("Blue Archive");
     if (screen.empty()) return info;
 

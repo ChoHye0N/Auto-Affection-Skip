@@ -8,6 +8,7 @@ namespace UI
 {
     public class MainViewModel : INotifyPropertyChanged
     {
+        // 이미지 인식 임계값
         private const double THRESHOLD = 0.95;
 
         // 함수 relay 횟수 확인 변수
@@ -132,7 +133,7 @@ namespace UI
                 }
 
                 // 루프 사이의 짧은 대기 (취소 토큰 포함)
-                await Task.Delay(500, token);
+                await Task.Delay(1000, token);
             }
         }
 
@@ -238,14 +239,14 @@ namespace UI
                 {
                     NativeMethods.KeyPressScan(0x02);
                     _countSecond = 0;
-                    await Task.Delay(800, token);
+                    await Task.Delay(1000, token);
                 }
 
                 if (NativeMethods.FindImage(_images["message_story_enter_btn"], 0.99).found)
                 {
                     NativeMethods.KeyPressScan(0x39);
                     _countSecond = 0;
-                    await Task.Delay(800, token);
+                    await Task.Delay(1000, token);
                     break;
                 }
                 if (_countSecond >= 5)
@@ -256,7 +257,7 @@ namespace UI
                 }
 
                 _countSecond++;
-                await Task.Delay(800, token);
+                await Task.Delay(1000, token);
             }
 
             if (_currentStep == MacroStep.ScanMessages)
@@ -266,7 +267,8 @@ namespace UI
             }
 
             await WaitForImageAndPushAsync("story_enter_btn", 0x39, token);
-            await Task.Delay(5000, token);
+            // 인연 스토리 첫 시작 때, 프레임 드랍 발생할 경우 10초 대기로 설정
+            await Task.Delay(10000, token);
 
             _currentStep = MacroStep.SkipStory;
         }
@@ -276,14 +278,17 @@ namespace UI
             WriteLog("[3] 스토리 스킵 시작");
 
             await WaitForImageAndPushAsync("menu_btn", 0x01, token);
-            await Task.Delay(800, token);
+            await Task.Delay(1000, token);
 
             //await WaitForImageAndClickAsync("skip_btn", token);
             //await Task.Delay(800, token);
 
             await WaitForImageAndPushAsync("ok_btn", 0x39, token);
             if (_countSecond >= 5) NativeMethods.KeyPressScan(0x01);
-            await Task.Delay(800, token);
+            await Task.Delay(1000, token);
+
+            // 프레임 드랍 발생 시
+            await Task.Delay(3000, token);
 
             _currentStep = MacroStep.ClaimReward;
         }

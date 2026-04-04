@@ -25,9 +25,15 @@ enum class MacroStep {
     FINISH                  // 종료
 };
 
-extern "C" __declspec(dllexport)
-ButtonInfo FindImage(const char* templatePath, double threshold);
-extern "C" __declspec(dllexport) void MouseClick(int x, int y);
-extern "C" __declspec(dllexport) void KeyPressScan(WORD scan);
-extern "C" __declspec(dllexport)
-int FindMultiImage(const char* templatePath, double threshold, ButtonInfo* outResults, int maxCount);
+#ifdef __cplusplus
+extern "C" {
+#endif
+
+    __declspec(dllexport) ButtonInfo FindImage(const char* templatePath, double threshold);
+    __declspec(dllexport) void MouseClick(int x, int y);
+    __declspec(dllexport) void KeyPressScan(WORD scan);
+    __declspec(dllexport) int FindMultiImage(const char* templatePath, double threshold, ButtonInfo* outResults, int maxCount);
+
+#ifdef __cplusplus
+}
+#endif

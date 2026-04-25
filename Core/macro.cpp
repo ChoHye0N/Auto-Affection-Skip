@@ -44,6 +44,7 @@ bool LoadTemplate(const char* path, Mat& btn, Mat& mask) {
     return true;
 }
 
+// 이미지 탐색 (단일 객체 검출)
 extern "C" __declspec(dllexport)
 ButtonInfo FindImage(const char* templatePath, double threshold) {
     ButtonInfo info = { 0, 0, false, 0.0 };
@@ -72,10 +73,12 @@ ButtonInfo FindImage(const char* templatePath, double threshold) {
     return info;
 }
 
+// 이미지 탐색 (여러 객체 검출)
 extern "C" __declspec(dllexport)
 int FindMultiImage(const char* templatePath, double threshold, ButtonInfo* outResults, int maxCount) {
     Mat button, mask, result;
     SearchContext ctx = PrepareSearch();
+
     if (ctx.screen.empty() || !LoadTemplate(templatePath, button, mask)) return 0;
 
     matchTemplate(ctx.screen, button, result, TM_CCORR_NORMED, mask);
@@ -92,6 +95,7 @@ int FindMultiImage(const char* templatePath, double threshold, ButtonInfo* outRe
             (int)((maxLoc.y + button.rows / 2.0) * ctx.scaleY),
             true, maxVal
         };
+
         count++;
 
         // 검출 영역 제외

@@ -9,13 +9,14 @@ namespace UI
     public class MainViewModel : INotifyPropertyChanged
     {
         // 이미지 인식 임계값
+        /* 단순한 이미지는 임계값 0.99 이상으로 설정 */
         private const double THRESHOLD = 0.95;
 
         // 함수 relay 횟수 확인 변수
         private int _countSecond = 0;
 
         // 메시지 관련 변수
-        private ButtonInfo[] _messageList = new ButtonInfo[5];
+        private ButtonInfo[] _messageList = new ButtonInfo[6];
         private int _messageCount = 0;
         private bool _messageCycle = false;
 
@@ -140,7 +141,7 @@ namespace UI
         #region Step Methods
         private void CheckMainStep()
         {
-            WriteLog("[1] 메인화면 확인...");
+            WriteLog("[1] 메인화면 모모톡 확인 중...");
 
             var res = NativeMethods.FindImage(_images["momotalk_icon"], THRESHOLD);
 
@@ -190,7 +191,7 @@ namespace UI
                 // 배열 초기화
                 Array.Clear(_messageList, 0, _messageList.Length);
 
-                _messageCount = NativeMethods.FindMultiImage(_images["message_count_box"], THRESHOLD, _messageList, _messageList.Length);
+                _messageCount = NativeMethods.FindMultiImage(_images["message_count_box"], 0.99, _messageList, _messageList.Length);
 
                 if (_messageCount == 0)
                 {
@@ -296,12 +297,7 @@ namespace UI
         {
             WriteLog("[4] 보상 확인");
 
-            /* 청휘석 이미지 인식이 되지 않음 */
-            // 임시로 딜레이 방식 추가
-            //await WaitForImageAndPushAsync("pyroxene", 0x1C, token);
-            await Task.Delay(5000, token);
-            NativeMethods.KeyPressScan(0x39);
-            await Task.Delay(1000, token);
+            await WaitForImageAndPushAsync("pyroxene", 0x39, token);
 
             _currentStep = MacroStep.ScanMessages;
         }

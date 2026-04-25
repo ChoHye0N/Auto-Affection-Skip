@@ -11,6 +11,7 @@ namespace UI
         // 이미지 인식 임계값
         /* 단순한 이미지는 임계값 0.99 이상으로 설정 */
         private const double THRESHOLD = 0.95;
+        private const double THRESHOLD_STRICT = 0.99;
 
         // 함수 relay 횟수 확인 변수
         private int _countSecond = 0;
@@ -191,7 +192,7 @@ namespace UI
                 // 배열 초기화
                 Array.Clear(_messageList, 0, _messageList.Length);
 
-                _messageCount = NativeMethods.FindMultiImage(_images["message_count_box"], 0.99, _messageList, _messageList.Length);
+                _messageCount = NativeMethods.FindMultiImage(_images["message_count_box"], THRESHOLD_STRICT, _messageList, _messageList.Length);
 
                 if (_messageCount == 0)
                 {
@@ -236,14 +237,14 @@ namespace UI
 
             while (!token.IsCancellationRequested)
             {
-                if (NativeMethods.FindImage(_images["message_reply_logo"], 0.99).found)
+                if (NativeMethods.FindImage(_images["message_reply_logo"], THRESHOLD_STRICT).found)
                 {
                     NativeMethods.KeyPressScan(0x02);
                     _countSecond = 0;
                     await Task.Delay(1000, token);
                 }
 
-                if (NativeMethods.FindImage(_images["message_story_enter_btn"], 0.99).found)
+                if (NativeMethods.FindImage(_images["message_story_enter_btn"], THRESHOLD_STRICT).found)
                 {
                     NativeMethods.KeyPressScan(0x39);
                     _countSecond = 0;

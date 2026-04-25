@@ -76,7 +76,9 @@
   </ItemGroup>
 
   <ItemGroup>
-    <None Include="bin\x64\Debug\net8.0-windows\Core.dll" />
+    <None Include="bin\x64\Debug\net8.0-windows\Core.dll">
+      <CopyToOutputDirectory>PreserveNewest</CopyToOutputDirectory>
+    </None>
     <None Include="bin\x64\Release\net8.0-windows\Core.dll" />
   </ItemGroup>
 

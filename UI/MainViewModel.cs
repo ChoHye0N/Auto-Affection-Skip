@@ -190,7 +190,7 @@ namespace UI
                 // 배열 초기화
                 Array.Clear(_messageList, 0, _messageList.Length);
 
-                _messageCount = NativeMethods.FindMultiImage(_images["message_count_box"], 0.99, _messageList, _messageList.Length);
+                _messageCount = NativeMethods.FindMultiImage(_images["message_count_box"], THRESHOLD, _messageList, _messageList.Length);
 
                 if (_messageCount == 0)
                 {
@@ -284,7 +284,6 @@ namespace UI
             //await Task.Delay(800, token);
 
             await WaitForImageAndPushAsync("ok_btn", 0x39, token);
-            if (_countSecond >= 5) NativeMethods.KeyPressScan(0x01);
             await Task.Delay(1000, token);
 
             // 프레임 드랍 발생 시
@@ -297,7 +296,12 @@ namespace UI
         {
             WriteLog("[4] 보상 확인");
 
-            await WaitForImageAndPushAsync("pyroxene", 0x1C, token);
+            /* 청휘석 이미지 인식이 되지 않음 */
+            // 임시로 딜레이 방식 추가
+            //await WaitForImageAndPushAsync("pyroxene", 0x1C, token);
+            await Task.Delay(5000, token);
+            NativeMethods.KeyPressScan(0x39);
+            await Task.Delay(1000, token);
 
             _currentStep = MacroStep.ScanMessages;
         }

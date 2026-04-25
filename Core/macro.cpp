@@ -4,151 +4,138 @@
 using namespace std;
 using namespace cv;
 
-// 1. 이미지 탐색 (단일 객체 검출)
+// 캡처 후 1920x1080으로 리사이즈 및 스케일 정보 반환
+SearchContext PrepareSearch() {
+    SearchContext ctx = { Mat(), 1.0, 1.0 };
+    HWND hwnd = FindWindowA("UnityWndClass", "Blue Archive");
+    if (!hwnd) return ctx;
+
+    RECT clientRect;
+    GetClientRect(hwnd, &clientRect);
+
+    ctx.screen = CaptureGameWindow("Blue Archive");
+    if (ctx.screen.empty()) return ctx;
+
+    ctx.scaleX = clientRect.right / 1920.0;
+    ctx.scaleY = clientRect.bottom / 1080.0;
+
+    resize(ctx.screen, ctx.screen, Size(1920, 1080), 0, 0, INTER_CUBIC);
+
+    return ctx;
+}
+
+// 템플릿 이미지 로드 및 알파 채널 처리
+bool LoadTemplate(const char* path, Mat& btn, Mat& mask) {
+    Mat raw = imread(path, IMREAD_UNCHANGED);
+    if (raw.empty()) return false;
+
+    if (raw.channels() == 4) {
+        vector<Mat> channels;
+        split(raw, channels);
+        mask = channels[3];
+        cvtColor(raw, btn, COLOR_BGRA2BGR);
+        cv::threshold(mask, mask, 1, 255, THRESH_BINARY);
+    }
+    else {
+        btn = raw;
+        mask = Mat();
+    }
+
+    return true;
+}
+
 extern "C" __declspec(dllexport)
 ButtonInfo FindImage(const char* templatePath, double threshold) {
     ButtonInfo info = { 0, 0, false, 0.0 };
-    Mat button, alphaMask, result;
+    Mat button, mask, result;
 
-    // 게임 화면 캡처
-    /* 윈도우 창 이름 바뀌면 수정 필요함 */
-    Mat screen = CaptureGameWindow("Blue Archive");
-    if (screen.empty()) return info;
+    SearchContext ctx = PrepareSearch();
+    if (ctx.screen.empty() || !LoadTemplate(templatePath, button, mask)) return info;
 
-    // 이미지 로드
-    Mat buttonWithAlpha = imread(templatePath, IMREAD_UNCHANGED);
-    if (buttonWithAlpha.empty()) return info;
-
-    // 알파 채널 처리 (마스크 생성)
-    if (buttonWithAlpha.channels() == 4) {
-        std::vector<Mat> channels;
-        split(buttonWithAlpha, channels);
-        alphaMask = channels[3];
-        cvtColor(buttonWithAlpha, button, COLOR_BGRA2BGR);
-        cv::threshold(alphaMask, alphaMask, 1, 255, THRESH_BINARY);
+    if (!mask.empty()) {
+        matchTemplate(ctx.screen, button, result, TM_CCORR_NORMED, mask);
     }
     else {
-        button = buttonWithAlpha;
+        matchTemplate(ctx.screen, button, result, TM_CCOEFF_NORMED);
     }
 
-    // 템플릿 매칭
-    if (!alphaMask.empty()) {
-        matchTemplate(screen, button, result, TM_CCORR_NORMED, alphaMask);
-    }
-    else {
-        matchTemplate(screen, button, result, TM_CCOEFF_NORMED);
-    }
-
-    double maxVal;
-    Point maxLoc;
+    double maxVal; Point maxLoc;
     minMaxLoc(result, nullptr, &maxVal, nullptr, &maxLoc);
 
     info.score = maxVal;
     if (maxVal >= threshold) {
         info.isFound = true;
-
-        // 중앙 좌표 계산
-        info.x = maxLoc.x + button.cols / 2;
-        info.y = maxLoc.y + button.rows / 2;
+        info.x = (int)((maxLoc.x + button.cols / 2.0) * ctx.scaleX);
+        info.y = (int)((maxLoc.y + button.rows / 2.0) * ctx.scaleY);
     }
 
     return info;
 }
 
-// 2. 이미지 탐색 (여러 객체 검출)
 extern "C" __declspec(dllexport)
 int FindMultiImage(const char* templatePath, double threshold, ButtonInfo* outResults, int maxCount) {
-    Mat button, alphaMask, result;
-    Mat screen = CaptureGameWindow("Blue Archive");
+    Mat button, mask, result;
+    SearchContext ctx = PrepareSearch();
+    if (ctx.screen.empty() || !LoadTemplate(templatePath, button, mask)) return 0;
 
-    Mat buttonWithAlpha = imread(templatePath, IMREAD_UNCHANGED);
-    if (screen.empty() || buttonWithAlpha.empty()) return 0;
+    matchTemplate(ctx.screen, button, result, TM_CCORR_NORMED, mask);
 
-    // 알파 채널 처리 (마스크 생성)
-    if (buttonWithAlpha.channels() == 4) {
-        std::vector<Mat> channels;
-        split(buttonWithAlpha, channels);
-        alphaMask = channels[3];
-        cvtColor(buttonWithAlpha, button, COLOR_BGRA2BGR);
-        cv::threshold(alphaMask, alphaMask, 1, 255, THRESH_BINARY);
-    }
-    else {
-        button = buttonWithAlpha;
-    }
-
-    matchTemplate(screen, button, result, TM_CCORR_NORMED, alphaMask);
-
-    int foundCount = 0;
-    while (foundCount < maxCount) {
-        double maxVal;
-        Point maxLoc;
+    int count = 0;
+    while (count < maxCount) {
+        double maxVal; Point maxLoc;
         minMaxLoc(result, nullptr, &maxVal, nullptr, &maxLoc);
 
         if (maxVal < threshold) break;
 
-        // 결과 채우기
-        outResults[foundCount].isFound = true;
-        outResults[foundCount].score = maxVal;
-        outResults[foundCount].x = maxLoc.x + button.cols / 2;
-        outResults[foundCount].y = maxLoc.y + button.rows / 2;
+        outResults[count] = {
+            (int)((maxLoc.x + button.cols / 2.0) * ctx.scaleX),
+            (int)((maxLoc.y + button.rows / 2.0) * ctx.scaleY),
+            true, maxVal
+        };
+        count++;
 
-        foundCount++;
-
-        // 중복 검출 방지 범위를 이미지 크기보다 약간 더 넓게 설정
-        int padding = 10;
-        Rect foundRect(
-            maxLoc.x - padding,
-            maxLoc.y - padding,
-            button.cols + (padding * 2),
-            button.rows + (padding * 2)
-        );
-
-        // 결과 맵의 실제 유효 범위를 벗어나지 않도록 교집합 계산
-        Rect scanBoundary(0, 0, result.cols, result.rows);
-        rectangle(result, foundRect & scanBoundary, Scalar(0), -1);
+        // 검출 영역 제외
+        Rect ignoreRect(maxLoc.x - 5, maxLoc.y - 5, button.cols + 10, button.rows + 10);
+        rectangle(result, ignoreRect & Rect(0, 0, result.cols, result.rows), Scalar(0), -1);
     }
 
-    return foundCount;
+    return count;
 }
 
-// 3. 마우스 클릭
 extern "C" __declspec(dllexport)
 void MouseClick(int x, int y) {
-    // 좌표를 화면 절대 좌표로 변환 (0~65535)
-    double screenW = GetSystemMetrics(SM_CXSCREEN);
-    double screenH = GetSystemMetrics(SM_CYSCREEN);
+    SetProcessDPIAware();
+    HWND hwnd = FindWindowA("UnityWndClass", "Blue Archive");
+    if (!hwnd) return;
 
-    INPUT input[3] = {};
+    POINT pt = { x, y };
+    ClientToScreen(hwnd, &pt);
 
-    // 마우스 이동
-    input[0].type = INPUT_MOUSE;
-    input[0].mi.dwFlags = MOUSEEVENTF_MOVE | MOUSEEVENTF_ABSOLUTE;
-    input[0].mi.dx = (long)((x * 65535) / screenW);
-    input[0].mi.dy = (long)((y * 65535) / screenH);
+    double sw = GetSystemMetrics(SM_CXSCREEN), sh = GetSystemMetrics(SM_CYSCREEN);
+    INPUT in[3] = {};
 
-    // 마우스 누르기
-    input[1].type = INPUT_MOUSE;
-    input[1].mi.dwFlags = MOUSEEVENTF_LEFTDOWN;
+    in[0].type = INPUT_MOUSE;
+    in[0].mi.dwFlags = MOUSEEVENTF_MOVE | MOUSEEVENTF_ABSOLUTE;
+    in[0].mi.dx = (long)(pt.x * 65535.0 / (sw - 1));
+    in[0].mi.dy = (long)(pt.y * 65535.0 / (sh - 1));
 
-    // 마우스 떼기
-    input[2].type = INPUT_MOUSE;
-    input[2].mi.dwFlags = MOUSEEVENTF_LEFTUP;
+    in[1].type = in[2].type = INPUT_MOUSE;
+    in[1].mi.dwFlags = MOUSEEVENTF_LEFTDOWN;
 
-    SendInput(3, input, sizeof(INPUT));
+    in[2].mi.dwFlags = MOUSEEVENTF_LEFTUP;
+
+    SendInput(3, in, sizeof(INPUT));
 }
 
-// 4. 버튼 입력
 extern "C" __declspec(dllexport)
 void KeyPressScan(WORD scan) {
-    INPUT inputs[2] = {};
+    INPUT in[2] = {};
 
-    inputs[0].type = INPUT_KEYBOARD;
-    inputs[0].ki.wScan = scan;
-    inputs[0].ki.dwFlags = KEYEVENTF_SCANCODE;
+    in[0].type = in[1].type = INPUT_KEYBOARD;
+    in[0].ki.wScan = in[1].ki.wScan = scan;
+    in[0].ki.dwFlags = KEYEVENTF_SCANCODE;
 
-    inputs[1].type = INPUT_KEYBOARD;
-    inputs[1].ki.wScan = scan;
-    inputs[1].ki.dwFlags = KEYEVENTF_SCANCODE | KEYEVENTF_KEYUP;
+    in[1].ki.dwFlags = KEYEVENTF_SCANCODE | KEYEVENTF_KEYUP;
 
-    SendInput(2, inputs, sizeof(INPUT));
+    SendInput(2, in, sizeof(INPUT));
 }

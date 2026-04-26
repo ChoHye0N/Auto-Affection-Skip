@@ -17,7 +17,7 @@ namespace UI
 
             return imageFiles.ToDictionary(
                 name => Path.GetFileNameWithoutExtension(name),
-                name => Path.Combine(baseDir, "assets", "images", name)
+                name => Path.Combine(baseDir, "resource", "images", name)
             );
         }
     }

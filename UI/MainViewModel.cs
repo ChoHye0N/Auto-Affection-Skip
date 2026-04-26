@@ -114,6 +114,8 @@ namespace UI
 
             // IsRunning은 가장 마지막에 변경
             Application.Current.Dispatcher.Invoke(() => IsRunning = false);
+            // UI의 활성화 상태를 즉시 갱신
+            CommandManager.InvalidateRequerySuggested();
         }
 
         // void 대신 async Task를 사용하여 내부에서 await Task.Delay 사용

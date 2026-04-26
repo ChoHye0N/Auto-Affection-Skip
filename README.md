@@ -9,7 +9,7 @@
 <br>
 <div>
     <img alt="C++" src="https://img.shields.io/badge/C%2B%2B-14-orange?logo=Cplusplus">
-    <img alt="opencv" src="https://img.shields.io/badge/OpenCV-4.10.0-%235C3EE8?logo=opencv">
+    <img alt="opencv" src="https://img.shields.io/badge/OpenCV-4.12.0-%235C3EE8?logo=opencv">
     <img alt="platform" src="https://img.shields.io/badge/platform-Windows-blueviolet">
 </div>
 <br>
@@ -43,7 +43,12 @@
 ## 이용 안내
 * 본 프로그램은 이미지 인식 기반으로 작동하며 게임 메모리를 직접 수정하지 않습니다.
 * 1920x1080 및 1280x720 해상도를 권장하며, 게임 화면을 가리는 창이 있으면 작동이 안될 수 있습니다.
-* 프로그램에 포함된 게임 관련 이미지 리소스의 저작권은 원저작권자인 'NEXON Games'에 있습니다.
+<br>
+
+## 주의 사항
+* 본 프로그램의 로고 및 게임 관련 리소스는 **MIT 라이센스 적용 대상이 아닙니다**.
+* 해당 로고의 그림 자체에 대한 저작권은 개발자에게 있으나, 로고에 사용된 캐릭터 등 원본 리소스의 저작권은 원저작권자인 **NEXON Korea Corp. 및 NEXON GAMES Co., Ltd.** 에 있습니다.
+* 본 프로젝트에 사용된 게임 관련 이미지 리소스의 저작권은 원저작권자인 **NEXON Korea Corp. 및 NEXON GAMES Co., Ltd.** 에 있습니다.
 <br>
 
 ## 오픈소스 라이브러리

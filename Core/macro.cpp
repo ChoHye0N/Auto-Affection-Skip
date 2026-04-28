@@ -4,16 +4,24 @@
 using namespace std;
 using namespace cv;
 
+HWND g_hwnd = nullptr;
+
+extern "C" __declspec(dllexport)
+bool Initialize() {
+    g_hwnd = FindWindowA("UnityWndClass", "Blue Archive");
+    if (!g_hwnd) return false;
+
+    return true;
+}
+
 // 캡처 후 1920x1080으로 리사이즈 및 스케일 정보 반환
 SearchContext PrepareSearch() {
     SearchContext ctx = { Mat(), 1.0, 1.0 };
-    HWND hwnd = FindWindowA("UnityWndClass", "Blue Archive");
-    if (!hwnd) return ctx;
 
     RECT clientRect;
-    GetClientRect(hwnd, &clientRect);
+    GetClientRect(g_hwnd, &clientRect);
 
-    ctx.screen = CaptureGameWindow("Blue Archive");
+    ctx.screen = CaptureGameWindow(g_hwnd);
     if (ctx.screen.empty()) return ctx;
 
     ctx.scaleX = clientRect.right / 1920.0;
@@ -44,7 +52,7 @@ bool LoadTemplate(const char* path, Mat& btn, Mat& mask) {
     return true;
 }
 
-// 이미지 탐색 (단일 객체 검출)
+// 단일 객체 검출 (객체 정보 반환)
 extern "C" __declspec(dllexport)
 ButtonInfo FindImage(const char* templatePath, double threshold) {
     ButtonInfo info = { 0, 0, false, 0.0 };
@@ -73,7 +81,7 @@ ButtonInfo FindImage(const char* templatePath, double threshold) {
     return info;
 }
 
-// 이미지 탐색 (여러 객체 검출)
+// 복수 객체 검출 (객체 개수 반환)
 extern "C" __declspec(dllexport)
 int FindMultiImage(const char* templatePath, double threshold, ButtonInfo* outResults, int maxCount) {
     Mat button, mask, result;
@@ -108,12 +116,10 @@ int FindMultiImage(const char* templatePath, double threshold, ButtonInfo* outRe
 
 extern "C" __declspec(dllexport)
 void MouseClick(int x, int y) {
-    SetProcessDPIAware();
-    HWND hwnd = FindWindowA("UnityWndClass", "Blue Archive");
-    if (!hwnd) return;
+    if (!g_hwnd) return;
 
     POINT pt = { x, y };
-    ClientToScreen(hwnd, &pt);
+    ClientToScreen(g_hwnd, &pt);
 
     double sw = GetSystemMetrics(SM_CXSCREEN), sh = GetSystemMetrics(SM_CYSCREEN);
     INPUT in[3] = {};

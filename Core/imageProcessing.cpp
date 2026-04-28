@@ -38,10 +38,7 @@ WindowCapture::~WindowCapture() {
     if (hScreenDC) ReleaseDC(this->targetHwnd, hScreenDC);
 }
 
-Mat CaptureGameWindow(const char* windowName) {
-    HWND hwnd = FindWindowA("UnityWndClass", windowName);
-    if (!hwnd) return Mat();
-
+Mat CaptureGameWindow(HWND hwnd) {
     WindowCapture cap(hwnd);
 
     // 전체 창을 Mat으로 가져오기 (4채널 BGRA 방식)

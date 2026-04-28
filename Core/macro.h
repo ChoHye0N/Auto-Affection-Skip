@@ -2,6 +2,8 @@
 
 #include "imageProcessing.h"
 
+extern HWND g_hwnd;
+
 struct ButtonInfo {
     int x;
     int y;

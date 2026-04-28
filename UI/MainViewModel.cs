@@ -57,7 +57,7 @@ namespace UI
             {
                 try
                 {
-                    Logs.Add($"[{DateTime.Now:HH:mm:ss}] {message}");
+                    Logs.Add($"[{DateTime.Now:HH:mm:ss}]\n{message}");
                     if (Logs.Count > 100) Logs.RemoveAt(0);
                 }
                 catch (Exception) { /* 로그 기록 중 발생하는 사소한 오류 무시 */ }
@@ -85,7 +85,7 @@ namespace UI
             }
             catch (Exception ex)
             {
-                WriteLog($"실행 중 오류: {ex.Message}");
+                WriteLog($"실행 중 오류:\n{ex.Message}");
             }
             finally
             {
@@ -106,7 +106,7 @@ namespace UI
         private void Cleanup()
         {
             // 로그를 먼저 찍고 상태를 변경해야 오류가 발생안함
-            WriteLog(">>> 매크로 상태 초기화 완료");
+            WriteLog("■ 매크로 상태 초기화 완료");
 
             _currentStep = MacroStep.Idle;
             _cts?.Dispose();
@@ -121,10 +121,18 @@ namespace UI
         // void 대신 async Task를 사용하여 내부에서 await Task.Delay 사용
         private async Task RunMacroLoopAsync(CancellationToken token)
         {
+            if (!NativeMethods.Initialize())
+            {
+                throw new InvalidOperationException("게임 창을 찾을 수 없음");
+            }
+
             while (_currentStep != MacroStep.Finish)
             {
                 // 즉시 취소 확인
                 token.ThrowIfCancellationRequested();
+
+                // 루프 사이의 짧은 대기 (취소 토큰 포함)
+                await Task.Delay(1000, token);
 
                 switch (_currentStep)
                 {
@@ -135,9 +143,6 @@ namespace UI
                     case MacroStep.SkipStory: await HandleStorySkip(token); break;
                     case MacroStep.ClaimReward: await HandleClaimReward(token); break;
                 }
-
-                // 루프 사이의 짧은 대기 (취소 토큰 포함)
-                await Task.Delay(1000, token);
             }
         }
 
@@ -162,7 +167,7 @@ namespace UI
 
         private async Task EnterMomotalkStep(CancellationToken token)
         {
-            await Task.Delay(1500, token);
+            await Task.Delay(500, token);
             var res = NativeMethods.FindImage(_images["message_icon"], THRESHOLD);
 
             if (res.found)
@@ -174,7 +179,7 @@ namespace UI
 
         private async Task ScanMessagesStep(CancellationToken token)
         {
-            await Task.Delay(1000, token);
+            await Task.Delay(500, token);
 
             // 처음 인식한 메시지 개수만큼 돌았을 때 확인
             if (_messageCycle)
@@ -253,7 +258,7 @@ namespace UI
                     await Task.Delay(1000, token);
                     break;
                 }
-                if (_countSecond >= 5)
+                if (_countSecond >= 7)
                 {
                     _currentStep = MacroStep.ScanMessages;
                     _countSecond = 0;
@@ -271,8 +276,8 @@ namespace UI
             }
 
             await WaitForImageAndPushAsync("story_enter_btn", 0x39, token);
-            // 인연 스토리 첫 시작 때, 프레임 드랍 발생할 경우 10초 대기로 설정
-            await Task.Delay(10000, token);
+            // 인연 스토리 첫 시작 때, 프레임 드랍 발생할 경우
+            await Task.Delay(8000, token);
 
             _currentStep = MacroStep.SkipStory;
         }
@@ -291,7 +296,7 @@ namespace UI
             await Task.Delay(1000, token);
 
             // 프레임 드랍 발생 시
-            await Task.Delay(3000, token);
+            await Task.Delay(2000, token);
 
             _currentStep = MacroStep.ClaimReward;
         }
@@ -315,10 +320,8 @@ namespace UI
 
                 if (res.found) {
                     NativeMethods.KeyPressScan(key);
-                    _countSecond = 0;
                     return;
                 }
-                _countSecond++;
 
                 await Task.Delay(1000, token);
             }

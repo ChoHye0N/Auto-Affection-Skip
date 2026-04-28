@@ -1,8 +1,5 @@
 ﻿#pragma once
 
-#include <opencv2/opencv.hpp>
-#include <windows.h>
-
 // GDI 자원 자동 관리를 위한 RAII 클래스
 class WindowCapture {
 public:
@@ -19,4 +16,4 @@ public:
     ~WindowCapture();
 };
 
-cv::Mat CaptureGameWindow(const char* windowName);
+cv::Mat CaptureGameWindow(HWND hwnd);

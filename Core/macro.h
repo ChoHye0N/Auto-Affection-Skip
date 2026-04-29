@@ -22,6 +22,7 @@ bool LoadTemplate(const char* path, cv::Mat& btn, cv::Mat& mask);
 #ifdef __cplusplus
 extern "C" {
 #endif
+    __declspec(dllexport) int Initialize();
     __declspec(dllexport) ButtonInfo FindImage(const char* templatePath, double threshold);
     __declspec(dllexport) int FindMultiImage(const char* templatePath, double threshold, ButtonInfo* outResults, int maxCount);
     __declspec(dllexport) void MouseClick(int x, int y);

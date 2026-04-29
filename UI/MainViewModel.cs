@@ -24,6 +24,7 @@ namespace UI
         private readonly Dictionary<string, string> _images;
         private MacroStep _currentStep = MacroStep.Idle;
         private CancellationTokenSource? _cts;
+        private int _gamePlatform = -1;
 
         private bool _isRunning;
         public bool IsRunning
@@ -121,7 +122,8 @@ namespace UI
         // void 대신 async Task를 사용하여 내부에서 await Task.Delay 사용
         private async Task RunMacroLoopAsync(CancellationToken token)
         {
-            if (!NativeMethods.Initialize())
+            _gamePlatform = NativeMethods.Initialize();
+            if (_gamePlatform == -1)
             {
                 throw new InvalidOperationException("게임 창을 찾을 수 없음");
             }
@@ -151,7 +153,7 @@ namespace UI
         {
             WriteLog("[1] 메인화면 모모톡 확인 중...");
 
-            var res = NativeMethods.FindImage(_images["momotalk_icon"], THRESHOLD);
+            var res  = NativeMethods.FindImage(_images[$"momotalk_icon_{_gamePlatform}"], THRESHOLD);
 
             if (res.found)
             {
@@ -244,7 +246,7 @@ namespace UI
 
             while (!token.IsCancellationRequested)
             {
-                if (NativeMethods.FindImage(_images["message_reply_logo"], THRESHOLD_STRICT).found)
+                if (NativeMethods.FindImage(_images[$"message_reply_logo_{_gamePlatform}"], THRESHOLD_STRICT).found)
                 {
                     NativeMethods.KeyPressScan(0x02);
                     _countSecond = 0;

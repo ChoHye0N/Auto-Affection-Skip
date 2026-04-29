@@ -7,11 +7,16 @@ using namespace cv;
 HWND g_hwnd = nullptr;
 
 extern "C" __declspec(dllexport)
-bool Initialize() {
-    g_hwnd = FindWindowA("UnityWndClass", "Blue Archive");
-    if (!g_hwnd) return false;
+int Initialize() {
+    // 추후 에뮬레이터 도입 예정
+    wstring winName[] = { L"Blue Archive"};
 
-    return true;
+    for (int i = 0; i < 1; i++) {
+        g_hwnd = FindWindowW(L"UnityWndClass", winName[i].c_str());
+        if (g_hwnd) return i;
+    }
+
+    return -1;
 }
 
 // 캡처 후 1920x1080으로 리사이즈 및 스케일 정보 반환
@@ -68,7 +73,9 @@ ButtonInfo FindImage(const char* templatePath, double threshold) {
         matchTemplate(ctx.screen, button, result, TM_CCOEFF_NORMED);
     }
 
-    double maxVal; Point maxLoc;
+    double maxVal;
+    Point maxLoc;
+
     minMaxLoc(result, nullptr, &maxVal, nullptr, &maxLoc);
 
     info.score = maxVal;
@@ -93,7 +100,9 @@ int FindMultiImage(const char* templatePath, double threshold, ButtonInfo* outRe
 
     int count = 0;
     while (count < maxCount) {
-        double maxVal; Point maxLoc;
+        double maxVal;
+        Point maxLoc;
+
         minMaxLoc(result, nullptr, &maxVal, nullptr, &maxLoc);
 
         if (maxVal < threshold) break;
@@ -114,6 +123,7 @@ int FindMultiImage(const char* templatePath, double threshold, ButtonInfo* outRe
     return count;
 }
 
+// 마우스 클릭 (Win32)
 extern "C" __declspec(dllexport)
 void MouseClick(int x, int y) {
     if (!g_hwnd) return;
@@ -137,6 +147,7 @@ void MouseClick(int x, int y) {
     SendInput(3, in, sizeof(INPUT));
 }
 
+// 키 입력 (Win32)
 extern "C" __declspec(dllexport)
 void KeyPressScan(WORD scan) {
     INPUT in[2] = {};

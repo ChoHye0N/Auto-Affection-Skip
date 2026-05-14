@@ -7,7 +7,7 @@ namespace UI
         // DLL 오류 및 이름 바꿔야 할 경우 생기면 수정
         const string dllPath = "AasCore.dll";
         [DllImport(dllPath, CallingConvention = CallingConvention.Cdecl)]
-        public static extern int Initialize();
+        public static extern int Initialize(int captureOption);
 
         [DllImport(dllPath, CallingConvention = CallingConvention.Cdecl, CharSet = CharSet.Ansi)]
         public static extern ButtonInfo FindImage(string templatePath, double threshold);

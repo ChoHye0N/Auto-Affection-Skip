@@ -122,7 +122,7 @@ namespace UI
         // void 대신 async Task를 사용하여 내부에서 await Task.Delay 사용
         private async Task RunMacroLoopAsync(CancellationToken token)
         {
-            _gamePlatform = NativeMethods.Initialize();
+            _gamePlatform = NativeMethods.Initialize(1);
             if (_gamePlatform == -1)
             {
                 throw new InvalidOperationException("게임 창을 찾을 수 없음");

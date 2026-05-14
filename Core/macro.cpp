@@ -5,10 +5,12 @@ using namespace std;
 using namespace cv;
 
 HWND g_hwnd = nullptr;
+int g_captureOption = NULL;
 
 extern "C" __declspec(dllexport)
-int Initialize() {
+int Initialize(int captureOption) {
     // 추후 에뮬레이터 도입 예정
+    g_captureOption = captureOption;
     wstring winName[] = { L"Blue Archive"};
 
     for (int i = 0; i < 1; i++) {
@@ -26,7 +28,7 @@ SearchContext PrepareSearch() {
     RECT clientRect;
     GetClientRect(g_hwnd, &clientRect);
 
-    ctx.screen = CaptureGameWindow(g_hwnd);
+    ctx.screen = CaptureGameWindow(g_hwnd, g_captureOption);
     if (ctx.screen.empty()) return ctx;
 
     ctx.scaleX = clientRect.right / 1920.0;

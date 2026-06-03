@@ -1,4 +1,4 @@
-cmake_minimum_required(VERSION 3.10)
+﻿cmake_minimum_required(VERSION 3.10)
 project(Core LANGUAGES CXX)
 
 set(PRJ_NAME "Core")
@@ -24,7 +24,10 @@ target_include_directories(${PRJ_NAME} PRIVATE ${CMAKE_CURRENT_SOURCE_DIR})
 
 if(USE_OPENCV)
     target_include_directories(${PRJ_NAME} PRIVATE ${OpenCV_INCLUDE_DIRS})
-    target_link_libraries(${PRJ_NAME} PRIVATE ${OpenCV_LIBRARIES})
+    target_link_libraries(${PRJ_NAME} PRIVATE
+        optimized "${OpenCV_DIR}/lib/Release/opencv_world4120_aas.lib"
+        debug     "${OpenCV_DIR}/lib/Debug/opencv_world4120d_aasd.lib"
+    )
 endif()
 
 if(COPY_DLL_TO_UI)

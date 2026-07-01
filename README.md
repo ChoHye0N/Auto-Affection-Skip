@@ -12,6 +12,9 @@
     <img alt="opencv" src="https://img.shields.io/badge/OpenCV-4.12.0-%235C3EE8?logo=opencv">
     <img alt="platform" src="https://img.shields.io/badge/platform-Windows-blueviolet">
 </div>
+<div>
+    <img alt="Downloads" src="https://img.shields.io/github/downloads/ChoHye0N/Auto-Affection-Skip/total?color=efefef&labelColor=ffffff&logo=github&logoColor=181717">
+</div>
 <br>
 
 <!-- markdownlint-restore -->
@@ -22,7 +25,7 @@
 귀찮아서 모모톡 읽기를 거부한 선생을 위한 어시스턴트
 <br>
 
-**버튼 딸깍**으로 쌓여있는 인연 스토리를 빠르게 정리하고 청휘석 확보!
+**버튼 딸깍**으로 쌓여있는 인연 스토리를 빠르게 정리하고 청휘석 확보 가능!
 
 </div>
 <br>
@@ -34,6 +37,7 @@
 <br>
 
 ## 다운로드 및 사용 방법
+> 모모톡 메시지의 정렬 방식을 **안 읽음** 으로 바꿔주세요!
 1. [Releases](https://github.com/ChoHye0N/Auto-Affection-Skip/releases) 페이지에서 최신 버전의 `.zip` 파일을 다운로드합니다.
 2. 압축을 해제한 뒤 `AutoAffectionSkip.exe`를 실행합니다.
 3. 블루 아카이브 **메인화면**을 띄운 상태에서 '시작' 버튼을 누릅니다.
@@ -41,14 +45,14 @@
 <br>
 
 ## 이용 안내
+* 블루아카이브 **Steam 클라이언트** 버전에서만 작동합니다.
 * 본 프로그램은 이미지 인식 기반으로 작동하며 게임 메모리를 직접 수정하지 않습니다.
 * 1920x1080 및 1280x720 해상도를 권장하며, 게임 화면을 가리는 창이 있으면 작동이 안될 수 있습니다.
 <br>
 
 ## 주의 사항
 * 본 프로그램의 로고 및 게임 관련 리소스는 **MIT 라이센스 적용 대상이 아닙니다**.
-* 해당 로고의 그림 자체에 대한 저작권은 개발자에게 있으나, 로고에 사용된 캐릭터 등 원본 리소스의 저작권은 원저작권자인 **NEXON Korea Corp. 및 NEXON GAMES Co., Ltd.** 에 있습니다.
-* 본 프로젝트에 사용된 게임 관련 이미지 리소스의 저작권은 원저작권자인 **NEXON Korea Corp. 및 NEXON GAMES Co., Ltd.** 에 있습니다.
+* 해당 로고에 대한 저작권은 개발자에게 있으나, 프로젝트에 사용된 게임 관련 이미지 리소스의 저작권은 원저작권자인 **NEXON Korea Corp. 및 NEXON GAMES Co., Ltd.** 에 있습니다.
 <br>
 
 ## 오픈소스 라이브러리

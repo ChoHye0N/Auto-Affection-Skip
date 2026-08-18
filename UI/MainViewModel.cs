@@ -3,6 +3,7 @@ using System.ComponentModel;
 using System.Runtime.CompilerServices;
 using System.Windows;
 using System.Windows.Input;
+using System.Windows.Media.Media3D;
 
 namespace UI
 {
@@ -12,6 +13,9 @@ namespace UI
         /* 단순한 이미지는 임계값 0.99 이상으로 설정 */
         private const double THRESHOLD = 0.95;
         private const double THRESHOLD_STRICT = 0.99;
+
+        private const int DELAY_COUNT = 1000;
+
 
         // 함수 relay 횟수 확인 변수
         private int _countSecond = 0;
@@ -100,6 +104,7 @@ namespace UI
             {
                 WriteLog("중지 요청 중...");
                 _cts.Cancel();
+                NativeMethods.ClearROI();
             }
             _currentStep = MacroStep.Finish;
         }
@@ -134,7 +139,7 @@ namespace UI
                 token.ThrowIfCancellationRequested();
 
                 // 루프 사이의 짧은 대기 (취소 토큰 포함)
-                await Task.Delay(1000, token);
+                await Task.Delay(DELAY_COUNT, token);
 
                 switch (_currentStep)
                 {
@@ -169,7 +174,7 @@ namespace UI
 
         private async Task EnterMomotalkStep(CancellationToken token)
         {
-            await Task.Delay(500, token);
+            await Task.Delay(DELAY_COUNT, token);
             var res = NativeMethods.FindImage(_images["message_icon"], THRESHOLD);
 
             if (res.found)
@@ -181,13 +186,17 @@ namespace UI
 
         private async Task ScanMessagesStep(CancellationToken token)
         {
-            await Task.Delay(500, token);
+            // 모모톡 화면 좌표 설정
+            NativeMethods.SetROI(200, 140, 1520, 800);
+
+            await Task.Delay(DELAY_COUNT, token);
 
             // 처음 인식한 메시지 개수만큼 돌았을 때 확인
             if (_messageCycle)
             {
                 WriteLog("읽을 메시지 없음, 메인화면으로 복귀중...");
                 NativeMethods.KeyPressScan(0x01);
+                NativeMethods.ClearROI();
 
                 _messageCycle = false;
                 _currentStep = MacroStep.CheckMain;
@@ -236,7 +245,7 @@ namespace UI
 
                 if (_messageCount == 0) _messageCycle = true;
 
-                await Task.Delay(500, token);
+                await Task.Delay(DELAY_COUNT, token);
             }
         }
 
@@ -250,17 +259,17 @@ namespace UI
                 {
                     NativeMethods.KeyPressScan(0x02);
                     _countSecond = 0;
-                    await Task.Delay(1000, token);
+                    await Task.Delay(DELAY_COUNT, token);
                 }
 
                 if (NativeMethods.FindImage(_images["message_story_enter_btn"], THRESHOLD_STRICT).found)
                 {
                     NativeMethods.KeyPressScan(0x39);
                     _countSecond = 0;
-                    await Task.Delay(1000, token);
+                    await Task.Delay(DELAY_COUNT, token);
                     break;
                 }
-                if (_countSecond >= 7)
+                if (_countSecond >= 5)
                 {
                     _currentStep = MacroStep.ScanMessages;
                     _countSecond = 0;
@@ -268,7 +277,7 @@ namespace UI
                 }
 
                 _countSecond++;
-                await Task.Delay(1000, token);
+                await Task.Delay(500, token);
             }
 
             if (_currentStep == MacroStep.ScanMessages)
@@ -279,7 +288,9 @@ namespace UI
 
             await WaitForImageAndPushAsync("story_enter_btn", 0x39, token);
             // 인연 스토리 첫 시작 때, 프레임 드랍 발생할 경우
-            await Task.Delay(8000, token);
+            await Task.Delay(6000, token);
+
+            NativeMethods.ClearROI();
 
             _currentStep = MacroStep.SkipStory;
         }
@@ -289,13 +300,13 @@ namespace UI
             WriteLog("[3] 스토리 스킵 시작");
 
             await WaitForImageAndPushAsync("menu_btn", 0x01, token);
-            await Task.Delay(1000, token);
+            await Task.Delay(DELAY_COUNT, token);
 
             //await WaitForImageAndClickAsync("skip_btn", token);
             //await Task.Delay(800, token);
 
             await WaitForImageAndPushAsync("ok_btn", 0x39, token);
-            await Task.Delay(1000, token);
+            await Task.Delay(DELAY_COUNT, token);
 
             // 프레임 드랍 발생 시
             await Task.Delay(2000, token);
@@ -325,7 +336,7 @@ namespace UI
                     return;
                 }
 
-                await Task.Delay(1000, token);
+                await Task.Delay(DELAY_COUNT, token);
             }
         }
         #endregion

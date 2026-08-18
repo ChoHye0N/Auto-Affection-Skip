@@ -20,5 +20,15 @@ namespace UI
 
         [DllImport(dllPath, CallingConvention = CallingConvention.Cdecl)]
         public static extern void KeyPressScan(ushort scan);
+
+        [DllImport(dllPath, CallingConvention = CallingConvention.Cdecl)]
+        public static extern void SetROI(int x, int y, int width, int height);
+
+        [DllImport(dllPath, CallingConvention = CallingConvention.Cdecl)]
+        public static extern void ClearROI();
+
+        [DllImport(dllPath, CallingConvention = CallingConvention.Cdecl)]
+        [return: MarshalAs(UnmanagedType.I1)]
+        public static extern bool IsROIEnabled();
     }
 }

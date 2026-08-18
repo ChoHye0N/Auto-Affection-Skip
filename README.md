@@ -11,6 +11,8 @@
     <img alt="C++" src="https://img.shields.io/badge/C%2B%2B-14-orange?logo=Cplusplus">
     <img alt="opencv" src="https://img.shields.io/badge/OpenCV-4.12.0-%235C3EE8?logo=opencv">
     <img alt="platform" src="https://img.shields.io/badge/platform-Windows-blueviolet">
+    <br>
+    <img alt="license" src="https://img.shields.io/github/license/ChoHye0N/Auto-Affection-Skip">
 </div>
 <div>
     <img alt="Downloads" src="https://img.shields.io/github/downloads/ChoHye0N/Auto-Affection-Skip/total?color=efefef&labelColor=ffffff&logo=github&logoColor=181717">
@@ -51,8 +53,9 @@
 <br>
 
 ## 주의 사항
-* 본 프로그램의 로고 및 게임 관련 리소스는 **MIT 라이센스 적용 대상이 아닙니다**.
-* 해당 로고에 대한 저작권은 개발자에게 있으나, 프로젝트에 사용된 게임 관련 이미지 리소스의 저작권은 원저작권자인 **NEXON Korea Corp. 및 NEXON GAMES Co., Ltd.** 에 있습니다.
+* 본 프로그램의 로고 및 게임 관련 리소스는 **AGPL-3.0 라이선스 적용 대상이 아닙니다.** 
+* 해당 로고에 대한 저작권은 개발자에게 있으나, 프로젝트에 사용된 게임 관련 이미지 리소스의 저작권은 원저작권자인 **NEXON Korea Corp.** 및 **NEXON GAMES Co., Ltd.** 에 있습니다.
+* 프로젝트가 AGPL-3.0 라이선스 하에 있다고 하더라도 프로그램의 로고는 동의 없이 사용되어서는 안 되며, 동의 없는 상업적 이용 또한 금지됩니다.
 <br>
 
 ## 오픈소스 라이브러리

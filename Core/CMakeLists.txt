@@ -39,6 +39,8 @@ if(COPY_DLL_TO_UI)
     set(UI_OUT_DIR "${CMAKE_CURRENT_SOURCE_DIR}/../UI/bin/${CMAKE_VS_PLATFORM_NAME}/$<CONFIG>/net8.0-windows")
 
     add_custom_command(TARGET ${PRJ_NAME} POST_BUILD
+        COMMAND ${CMAKE_COMMAND} -E make_directory
+            "${UI_OUT_DIR}"
         COMMAND ${CMAKE_COMMAND} -E copy_if_different
             "$<TARGET_FILE:${PRJ_NAME}>"
             "${UI_OUT_DIR}/"

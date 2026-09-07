@@ -1,0 +1,47 @@
+name: build
+
+on:
+  push:
+    branches: [master]
+  pull_request:
+    branches: [master]
+  workflow_dispatch:
+
+jobs:
+  build:
+    runs-on: windows-latest
+
+    steps:
+      - name: Checkout
+        uses: actions/checkout@v4
+        
+      - name: Cache vcpkg archives
+        uses: actions/cache@v4
+        with:
+          path: ~\AppData\Local\vcpkg\archives
+          key: vcpkg-archives-${{ runner.os }}-${{ hashFiles('Core/vcpkg.json') }}
+          restore-keys: |
+            vcpkg-archives-${{ runner.os }}-
+
+      - name: Configure Core (CMake + vcpkg)
+        run: cmake -S Core -B Core/build -A x64 -DCMAKE_TOOLCHAIN_FILE="$env:VCPKG_INSTALLATION_ROOT/scripts/buildsystems/vcpkg.cmake"
+
+      - name: Build Core (Release)
+        run: cmake --build Core/build --config Release
+
+      - name: Setup .NET
+        uses: actions/setup-dotnet@v4
+        with:
+          dotnet-version: "8.0.x"
+
+      - name: Build UI (Release, x64)
+        run: dotnet build UI/UI.csproj -c Release -p:Platform=x64
+
+      - name: Verify AasCore.dll was copied next to the UI build output
+        shell: pwsh
+        run: |
+          $dll = "UI/bin/x64/Release/net8.0-windows/AasCore.dll"
+          if (-not (Test-Path $dll)) {
+            Write-Error "$dll not found - Core's post-build copy step did not run or produced an unexpected path"
+            exit 1
+          }

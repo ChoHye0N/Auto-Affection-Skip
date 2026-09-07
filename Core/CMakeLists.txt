@@ -44,4 +44,18 @@ if(COPY_DLL_TO_UI)
             "${UI_OUT_DIR}/"
         COMMENT "Copying ${DLL_NAME}.dll to C# UI bin directory..."
     )
+
+    foreach(_opencv_target ${OpenCV_LIBS})
+        if(TARGET ${_opencv_target})
+            get_target_property(_opencv_target_type ${_opencv_target} TYPE)
+            if(_opencv_target_type STREQUAL "SHARED_LIBRARY")
+                add_custom_command(TARGET ${PRJ_NAME} POST_BUILD
+                    COMMAND ${CMAKE_COMMAND} -E copy_if_different
+                        "$<TARGET_FILE:${_opencv_target}>"
+                        "${UI_OUT_DIR}/"
+                    COMMENT "Copying ${_opencv_target} runtime DLL to C# UI bin directory..."
+                )
+            endif()
+        endif()
+    endforeach()
 endif()

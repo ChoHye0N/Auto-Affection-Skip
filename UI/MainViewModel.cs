@@ -158,7 +158,12 @@ namespace UI
         {
             WriteLog("[1] 메인화면 모모톡 확인 중...");
 
+            // 모모톡 아이콘이 위치한 좌측 상단 아이콘 영역으로 검색 범위 제한 (공지/미션/청휘석구입 등 포함)
+            NativeMethods.SetROI(0, 130, 300, 300);
+
             var res  = NativeMethods.FindImage(_images[$"momotalk_icon_{_gamePlatform}"], THRESHOLD);
+
+            NativeMethods.ClearROI();
 
             if (res.found)
             {

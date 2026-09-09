@@ -1,0 +1,81 @@
+name: release
+
+on:
+  push:
+    tags:
+      - "v*"
+
+permissions:
+  contents: write
+
+jobs:
+  release:
+    runs-on: windows-latest
+
+    steps:
+      - name: Checkout
+        uses: actions/checkout@v4
+
+      - name: Cache vcpkg archives
+        uses: actions/cache@v4
+        with:
+          path: ~\AppData\Local\vcpkg\archives
+          key: vcpkg-archives-${{ runner.os }}-${{ hashFiles('Core/vcpkg.json') }}
+          restore-keys: |
+            vcpkg-archives-${{ runner.os }}-
+
+      - name: Configure Core (CMake + vcpkg)
+        run: cmake -S Core -B Core/build -A x64 -DCMAKE_TOOLCHAIN_FILE="$env:VCPKG_INSTALLATION_ROOT/scripts/buildsystems/vcpkg.cmake"
+
+      - name: Build Core (Release)
+        run: cmake --build Core/build --config Release
+
+      - name: Setup .NET
+        uses: actions/setup-dotnet@v4
+        with:
+          dotnet-version: "8.0.x"
+
+      - name: Publish UI (self-contained, single file, win-x64)
+        run: >
+          dotnet publish UI/UI.csproj
+          -c Release -p:Platform=x64
+          -r win-x64 --self-contained true
+          -p:PublishSingleFile=true -p:PublishReadyToRun=true
+          -o publish
+
+      - name: Copy native dependencies into publish output
+        shell: pwsh
+        # Core의 CMake POST_BUILD 복사 스크립트는 RID(win-x64)별 publish 경로를 모르므로
+        # AasCore.dll / OpenCV 런타임 DLL이 publish 결과물에 자동으로 포함되지 않음
+        run: |
+          $src = "UI/bin/x64/Release/net8.0-windows"
+          Copy-Item "$src/AasCore.dll" "publish/" -Force
+          Copy-Item "$src/opencv_world*.dll" "publish/" -Force
+
+      - name: Verify native DLLs are present in publish output
+        shell: pwsh
+        run: |
+          foreach ($name in @("AasCore.dll")) {
+            if (-not (Test-Path "publish/$name")) {
+              Write-Error "$name missing from publish output"
+              exit 1
+            }
+          }
+          if (-not (Get-ChildItem "publish" -Filter "opencv_world*.dll")) {
+            Write-Error "OpenCV runtime DLL missing from publish output"
+            exit 1
+          }
+
+      - name: Zip release
+        shell: pwsh
+        run: |
+          $version = "${{ github.ref_name }}"
+          Compress-Archive -Path "publish/*" -DestinationPath "AutoAffectionSkip-$version-win-x64.zip"
+
+      - name: Create GitHub Release
+        uses: softprops/action-gh-release@v2
+        env:
+          GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
+        with:
+          files: AutoAffectionSkip-*-win-x64.zip
+          generate_release_notes: true

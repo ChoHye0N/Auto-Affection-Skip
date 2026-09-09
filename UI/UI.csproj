@@ -8,6 +8,7 @@
     <UseWPF>true</UseWPF>
     <Platforms>AnyCPU;x64</Platforms>
     <AssemblyName>AutoAffectionSkip</AssemblyName>
+    <ApplicationIcon>app.ico</ApplicationIcon>
   </PropertyGroup>
 
   <ItemGroup>
@@ -61,11 +62,20 @@
   </ItemGroup>
 
   <ItemGroup>
+    <None Remove="app.ico"/>
+    <Resource Include="app.ico"/>
+  </ItemGroup>
+
+  <ItemGroup>
     <Folder Include="bin\x64\Debug\net8.0-windows\" />
   </ItemGroup>
 
   <ItemGroup>
     <None Include="bin\x64\Release\net8.0-windows\AasCore.dll" />
+  </ItemGroup>
+
+  <ItemGroup>
+    <PackageReference Include="ModernWpfUI" Version="0.9.6" />
   </ItemGroup>
 
 </Project>

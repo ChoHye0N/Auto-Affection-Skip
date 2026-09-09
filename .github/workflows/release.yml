@@ -46,11 +46,16 @@ jobs:
       - name: Copy native dependencies into publish output
         shell: pwsh
         # Core의 CMake POST_BUILD 복사 스크립트는 RID(win-x64)별 publish 경로를 모르므로
-        # AasCore.dll / OpenCV 런타임 DLL이 publish 결과물에 자동으로 포함되지 않음
+        # AasCore.dll / OpenCV 런타임 DLL이 publish 결과물에 자동으로 포함되지 않음.
+        # opencv_world*.dll만 복사하면 vcpkg가 동적으로 링크한 jpeg/png/zlib 런타임 DLL이
+        # 빠져 배포 zip을 실행할 때 "지정된 모듈을 찾을 수 없습니다" 오류가 발생하므로,
+        # vcpkg가 설치한 bin 디렉터리의 모든 DLL(opencv_world + 그 의존 DLL 전부)을 복사한다.
         run: |
           $src = "UI/bin/x64/Release/net8.0-windows"
           Copy-Item "$src/AasCore.dll" "publish/" -Force
-          Copy-Item "$src/opencv_world*.dll" "publish/" -Force
+
+          $vcpkgBin = "Core/build/vcpkg_installed/x64-windows/bin"
+          Copy-Item "$vcpkgBin/*.dll" "publish/" -Force
 
       - name: Verify native DLLs are present in publish output
         shell: pwsh
@@ -64,6 +69,16 @@ jobs:
           if (-not (Get-ChildItem "publish" -Filter "opencv_world*.dll")) {
             Write-Error "OpenCV runtime DLL missing from publish output"
             exit 1
+          }
+
+          # vcpkg가 설치한 런타임 DLL(jpeg/png/zlib 등 OpenCV의 동적 의존성 포함)이
+          # 하나라도 publish 결과물에서 빠지면 실행 시 모듈 로드 오류로 이어지므로 개수를 대조한다.
+          $vcpkgDlls = Get-ChildItem "Core/build/vcpkg_installed/x64-windows/bin" -Filter "*.dll"
+          foreach ($dll in $vcpkgDlls) {
+            if (-not (Test-Path "publish/$($dll.Name)")) {
+              Write-Error "$($dll.Name) missing from publish output (vcpkg runtime dependency not copied)"
+              exit 1
+            }
           }
 
       - name: Zip release

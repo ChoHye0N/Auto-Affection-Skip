@@ -3,19 +3,13 @@ using System.ComponentModel;
 using System.Runtime.CompilerServices;
 using System.Windows;
 using System.Windows.Input;
-using System.Windows.Media.Media3D;
 
 namespace UI
 {
     public class MainViewModel : INotifyPropertyChanged
     {
-        // 이미지 인식 임계값
-        /* 단순한 이미지는 임계값 0.99 이상으로 설정 */
-        private const double THRESHOLD = 0.95;
-        private const double THRESHOLD_STRICT = 0.99;
-
-        private const int DELAY_COUNT = 1000;
-
+        // 설정 메뉴에서 조절 가능한 값 (임계값 / 지연시간 / 재시도 횟수 / 캡처 방식)
+        private AppSettings _settings = AppSettings.Load();
 
         // 함수 relay 횟수 확인 변수
         private int _countSecond = 0;
@@ -38,20 +32,35 @@ namespace UI
                 _isRunning = value;
                 OnPropertyChanged();
                 OnPropertyChanged(nameof(IsStartEnabled));
+                OnPropertyChanged(nameof(IsOptionEnabled));
             }
         }
 
         public bool IsStartEnabled => !IsRunning;
+        public bool IsOptionEnabled => !IsRunning;
         public ObservableCollection<string> Logs { get; } = new ObservableCollection<string>();
 
         public ICommand StartCommand { get; }
         public ICommand StopCommand { get; }
+        public ICommand OptionCommand { get; }
 
         public MainViewModel()
         {
             _images = ImagePaths.GetImageDictionary();
             StartCommand = new RelayCommand(async _ => await StartMacroAsync(), _ => !IsRunning);
             StopCommand = new RelayCommand(_ => StopMacro(), _ => IsRunning);
+            OptionCommand = new RelayCommand(_ => OpenSettings(), _ => !IsRunning);
+        }
+
+        private void OpenSettings()
+        {
+            var owner = Application.Current?.MainWindow;
+            var settingsWindow = new SettingsWindow(_settings) { Owner = owner };
+
+            if (settingsWindow.ShowDialog() == true)
+            {
+                _settings = settingsWindow.Settings;
+            }
         }
 
         private void WriteLog(string message)
@@ -127,7 +136,7 @@ namespace UI
         // void 대신 async Task를 사용하여 내부에서 await Task.Delay 사용
         private async Task RunMacroLoopAsync(CancellationToken token)
         {
-            _gamePlatform = NativeMethods.Initialize(0);
+            _gamePlatform = NativeMethods.Initialize(_settings.CaptureOption);
             if (_gamePlatform == -1)
             {
                 throw new InvalidOperationException("게임 창을 찾을 수 없음");
@@ -139,7 +148,7 @@ namespace UI
                 token.ThrowIfCancellationRequested();
 
                 // 루프 사이의 짧은 대기 (취소 토큰 포함)
-                await Task.Delay(DELAY_COUNT, token);
+                await Task.Delay(_settings.DelayMs, token);
 
                 switch (_currentStep)
                 {
@@ -161,7 +170,7 @@ namespace UI
             // 모모톡 아이콘이 위치한 좌측 상단 아이콘 영역으로 검색 범위 제한 (공지/미션/청휘석구입 등 포함)
             NativeMethods.SetROI(0, 130, 300, 300);
 
-            var res  = NativeMethods.FindImage(_images[$"momotalk_icon_{_gamePlatform}"], THRESHOLD);
+            var res  = NativeMethods.FindImage(_images[$"momotalk_icon_{_gamePlatform}"], _settings.Threshold);
 
             NativeMethods.ClearROI();
 
@@ -179,8 +188,8 @@ namespace UI
 
         private async Task EnterMomotalkStep(CancellationToken token)
         {
-            await Task.Delay(DELAY_COUNT, token);
-            var res = NativeMethods.FindImage(_images["message_icon"], THRESHOLD);
+            await Task.Delay(_settings.DelayMs, token);
+            var res = NativeMethods.FindImage(_images["message_icon"], _settings.Threshold);
 
             if (res.found)
             {
@@ -194,7 +203,7 @@ namespace UI
             // 모모톡 화면 좌표 설정
             NativeMethods.SetROI(200, 140, 1520, 800);
 
-            await Task.Delay(DELAY_COUNT, token);
+            await Task.Delay(_settings.DelayMs, token);
 
             // 처음 인식한 메시지 개수만큼 돌았을 때 확인
             if (_messageCycle)
@@ -215,7 +224,7 @@ namespace UI
                 // 배열 초기화
                 Array.Clear(_messageList, 0, _messageList.Length);
 
-                _messageCount = NativeMethods.FindMultiImage(_images["message_count_box"], THRESHOLD_STRICT, _messageList, _messageList.Length);
+                _messageCount = NativeMethods.FindMultiImage(_images["message_count_box"], _settings.ThresholdStrict, _messageList, _messageList.Length);
 
                 if (_messageCount == 0)
                 {
@@ -250,7 +259,7 @@ namespace UI
 
                 if (_messageCount == 0) _messageCycle = true;
 
-                await Task.Delay(DELAY_COUNT, token);
+                await Task.Delay(_settings.DelayMs, token);
             }
         }
 
@@ -260,21 +269,21 @@ namespace UI
 
             while (!token.IsCancellationRequested)
             {
-                if (NativeMethods.FindImage(_images[$"message_reply_logo_{_gamePlatform}"], THRESHOLD_STRICT).found)
+                if (NativeMethods.FindImage(_images[$"message_reply_logo_{_gamePlatform}"], _settings.ThresholdStrict).found)
                 {
                     NativeMethods.KeyPressScan(0x02);
                     _countSecond = 0;
-                    await Task.Delay(DELAY_COUNT, token);
+                    await Task.Delay(_settings.DelayMs, token);
                 }
 
-                if (NativeMethods.FindImage(_images["message_story_enter_btn"], THRESHOLD_STRICT).found)
+                if (NativeMethods.FindImage(_images["message_story_enter_btn"], _settings.ThresholdStrict).found)
                 {
                     NativeMethods.KeyPressScan(0x39);
                     _countSecond = 0;
-                    await Task.Delay(DELAY_COUNT, token);
+                    await Task.Delay(_settings.DelayMs, token);
                     break;
                 }
-                if (_countSecond >= 5)
+                if (_countSecond >= _settings.RetryCount)
                 {
                     _currentStep = MacroStep.ScanMessages;
                     _countSecond = 0;
@@ -305,13 +314,13 @@ namespace UI
             WriteLog("[3] 스토리 스킵 시작");
 
             await WaitForImageAndPushAsync("menu_btn", 0x01, token);
-            await Task.Delay(DELAY_COUNT, token);
+            await Task.Delay(_settings.DelayMs, token);
 
             //await WaitForImageAndClickAsync("skip_btn", token);
             //await Task.Delay(800, token);
 
             await WaitForImageAndPushAsync("ok_btn", 0x39, token);
-            await Task.Delay(DELAY_COUNT, token);
+            await Task.Delay(_settings.DelayMs, token);
 
             // 프레임 드랍 발생 시
             await Task.Delay(2000, token);
@@ -334,14 +343,14 @@ namespace UI
             {
                 WriteLog($"[{imgName}] 이미지 찾는 중...");
 
-                var res = NativeMethods.FindImage(_images[imgName], THRESHOLD);
+                var res = NativeMethods.FindImage(_images[imgName], _settings.Threshold);
 
                 if (res.found) {
                     NativeMethods.KeyPressScan(key);
                     return;
                 }
 
-                await Task.Delay(DELAY_COUNT, token);
+                await Task.Delay(_settings.DelayMs, token);
             }
         }
         #endregion

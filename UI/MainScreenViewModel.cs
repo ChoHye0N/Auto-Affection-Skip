@@ -1,4 +1,4 @@
-using System.Collections.ObjectModel;
+﻿using System.Collections.ObjectModel;
 using System.ComponentModel;
 using System.Runtime.CompilerServices;
 using System.Windows;
@@ -6,7 +6,6 @@ using System.Windows.Input;
 
 namespace UI
 {
-    // 메인(로그/시작·종료) 화면의 ViewModel. 매크로 실행 엔진과 설정값을 소유한다.
     public class MainScreenViewModel : INotifyPropertyChanged
     {
         // 설정 화면에서 조절 가능한 값 (임계값 / 지연시간 / 재시도 횟수 / 캡처 방식)
@@ -157,7 +156,6 @@ namespace UI
         {
             WriteLog("[1] 메인화면 모모톡 확인 중...");
 
-            // 모모톡 아이콘이 위치한 좌측 상단 아이콘 영역으로 검색 범위 제한 (공지/미션/청휘석구입 등 포함)
             NativeMethods.SetROI(0, 130, 300, 300);
 
             var res  = NativeMethods.FindImage(_images[$"momotalk_icon_{_gamePlatform}"], _settings.Threshold);

@@ -1,10 +1,9 @@
-using System.ComponentModel;
+﻿using System.ComponentModel;
 using System.Runtime.CompilerServices;
 using System.Windows.Input;
 
 namespace UI
 {
-    // 화면 전환만 담당하는 셸(shell) ViewModel. 실제 화면별 상태/로직은 각 화면 ViewModel이 소유한다.
     public class MainViewModel : INotifyPropertyChanged
     {
         public MainScreenViewModel MainScreen { get; }

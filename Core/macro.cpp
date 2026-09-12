@@ -11,7 +11,6 @@ int g_captureOption = NULL;
 ROI g_roi = {};
 
 // 같은 틱(짧은 시간) 안에서 여러 템플릿을 검사할 때 화면 캡처를 재사용하기 위한 캐시
-// (예: ProcessConversation에서 한 루프당 FindImage를 연달아 여러 번 호출하는 경우)
 namespace {
     constexpr DWORD FRAME_CACHE_TTL_MS = 100;
 

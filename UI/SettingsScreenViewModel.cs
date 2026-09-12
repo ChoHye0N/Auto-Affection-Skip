@@ -1,4 +1,4 @@
-using System.ComponentModel;
+﻿using System.ComponentModel;
 using System.Globalization;
 using System.Runtime.CompilerServices;
 using System.Windows;
@@ -6,7 +6,6 @@ using System.Windows.Input;
 
 namespace UI
 {
-    // 설정 화면의 ViewModel. 편집 중인 값은 저장 전까지 이 안에서만 유지된다.
     public class SettingsScreenViewModel : INotifyPropertyChanged
     {
         public event EventHandler<AppSettings>? Saved;

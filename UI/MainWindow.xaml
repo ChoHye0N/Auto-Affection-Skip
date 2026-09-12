@@ -1,4 +1,4 @@
-<Window x:Class="UI.MainWindow"
+﻿<Window x:Class="UI.MainWindow"
         xmlns="http://schemas.microsoft.com/winfx/2006/xaml/presentation"
         xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml"
         xmlns:ui="http://schemas.modernwpf.com/2019"
@@ -71,7 +71,7 @@
             <Setter Property="ScrollViewer.HorizontalScrollBarVisibility" Value="Disabled"/>
         </Style>
 
-        <!-- 메인 화면: MainScreenViewModel이 CurrentViewModel일 때 자동으로 선택됨 (pure MVVM) -->
+        <!-- 메인 화면: MainScreenViewModel이 CurrentViewModel일 때 자동으로 선택됨 -->
         <DataTemplate DataType="{x:Type local:MainScreenViewModel}">
             <Grid>
                 <Grid.RowDefinitions>
@@ -134,7 +134,7 @@
             </Grid>
         </DataTemplate>
 
-        <!-- 설정 화면: SettingsScreenViewModel이 CurrentViewModel일 때 자동으로 선택됨 (pure MVVM) -->
+        <!-- 설정 화면: SettingsScreenViewModel이 CurrentViewModel일 때 자동으로 선택됨 -->
         <DataTemplate DataType="{x:Type local:SettingsScreenViewModel}">
             <Grid>
                 <Grid.RowDefinitions>

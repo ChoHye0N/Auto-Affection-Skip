@@ -1,11 +1,10 @@
-using System.Collections.Specialized;
+﻿using System.Collections.Specialized;
 using System.Windows;
 using System.Windows.Controls;
 
 namespace UI
 {
-    // ItemsSource가 갱신될 때 마지막 항목으로 자동 스크롤하는 첨부 동작.
-    // 코드비하인드 없이(순수 MVVM) XAML에서만 선언해 사용한다.
+    // ItemsSource가 갱신될 때 마지막 항목으로 자동 스크롤하는 첨부 동작
     public static class ListBoxBehavior
     {
         public static readonly DependencyProperty AutoScrollToEndProperty =

@@ -1,11 +1,12 @@
 {
   "name": "auto-affection-skip-core",
   "version-string": "1.0.0",
+  "builtin-baseline": "4a1c77189c64dae7afd478333a64d1e604d5dc91",
   "dependencies": [
     {
       "name": "opencv4",
       "default-features": false,
-      "features": ["world", "jpeg", "png", "intrinsics"]
+      "features": [ "world", "jpeg", "png", "intrinsics" ]
     }
   ]
 }

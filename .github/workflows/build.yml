@@ -23,6 +23,10 @@ jobs:
           restore-keys: |
             vcpkg-archives-${{ runner.os }}-
 
+      - name: Fetch vcpkg history (for builtin-baseline)
+        shell: pwsh
+        run: git -C "$env:VCPKG_INSTALLATION_ROOT" fetch --quiet origin
+
       - name: Configure Core (CMake + vcpkg)
         run: cmake -S Core -B Core/build -A x64 -DCMAKE_TOOLCHAIN_FILE="$env:VCPKG_INSTALLATION_ROOT/scripts/buildsystems/vcpkg.cmake"
 

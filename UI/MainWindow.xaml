@@ -163,6 +163,11 @@
                                  ui:ControlHelper.Header="응답 대기 재시도 횟수"
                                  ui:ControlHelper.Description="메시지 응답을 기다리는 최대 횟수 (기본 5회)"/>
 
+                        <TextBox Text="{Binding PollIntervalText, UpdateSourceTrigger=PropertyChanged}"
+                                 Margin="0,16,0,0"
+                                 ui:ControlHelper.Header="응답 확인 간격 (ms)"
+                                 ui:ControlHelper.Description="메시지 응답을 기다리며 버튼을 확인하는 간격 (최소 100, 기본 1000ms)"/>
+
                         <ComboBox SelectedIndex="{Binding SelectedCaptureOption}"
                                   Margin="0,16,0,0"
                                   HorizontalAlignment="Stretch"
@@ -175,6 +180,7 @@
                 </ScrollViewer>
 
                 <StackPanel Grid.Row="1" Orientation="Horizontal" HorizontalAlignment="Right" Margin="20">
+                    <Button Content="기본값 복원" Width="110" Height="32" Background="#A0A0A0" Command="{Binding ResetDefaultsCommand}" Margin="0,0,8,0"/>
                     <Button Content="저장" Width="90" Height="32" Command="{Binding SaveCommand}" Margin="0,0,8,0"/>
                     <Button Content="취소" Width="90" Height="32" Background="#A0A0A0" Command="{Binding CancelCommand}"/>
                 </StackPanel>

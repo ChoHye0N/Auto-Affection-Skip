@@ -39,6 +39,13 @@ namespace UI
             set { _retryCountText = value; OnPropertyChanged(); }
         }
 
+        private string _pollIntervalText;
+        public string PollIntervalText
+        {
+            get => _pollIntervalText;
+            set { _pollIntervalText = value; OnPropertyChanged(); }
+        }
+
         private int _selectedCaptureOption;
         public int SelectedCaptureOption
         {
@@ -48,6 +55,7 @@ namespace UI
 
         public ICommand SaveCommand { get; }
         public ICommand CancelCommand { get; }
+        public ICommand ResetDefaultsCommand { get; }
 
         public SettingsScreenViewModel(AppSettings current)
         {
@@ -55,10 +63,24 @@ namespace UI
             _thresholdStrictText = current.ThresholdStrict.ToString(CultureInfo.InvariantCulture);
             _delayText = current.DelayMs.ToString(CultureInfo.InvariantCulture);
             _retryCountText = current.RetryCount.ToString(CultureInfo.InvariantCulture);
+            _pollIntervalText = current.PollIntervalMs.ToString(CultureInfo.InvariantCulture);
             _selectedCaptureOption = current.CaptureOption;
 
             SaveCommand = new RelayCommand(_ => Save());
             CancelCommand = new RelayCommand(_ => Cancelled?.Invoke(this, EventArgs.Empty));
+            ResetDefaultsCommand = new RelayCommand(_ => ResetDefaults());
+        }
+
+        // 입력창만 기본값으로 되돌림 (저장 버튼을 눌러야 반영됨)
+        private void ResetDefaults()
+        {
+            var defaults = new AppSettings();
+            ThresholdText = defaults.Threshold.ToString(CultureInfo.InvariantCulture);
+            ThresholdStrictText = defaults.ThresholdStrict.ToString(CultureInfo.InvariantCulture);
+            DelayText = defaults.DelayMs.ToString(CultureInfo.InvariantCulture);
+            RetryCountText = defaults.RetryCount.ToString(CultureInfo.InvariantCulture);
+            PollIntervalText = defaults.PollIntervalMs.ToString(CultureInfo.InvariantCulture);
+            SelectedCaptureOption = defaults.CaptureOption;
         }
 
         private void Save()
@@ -89,12 +111,19 @@ namespace UI
                 return;
             }
 
+            if (!int.TryParse(PollIntervalText, out var pollIntervalMs) || pollIntervalMs < 100)
+            {
+                MessageBox.Show("응답 확인 간격은 100 이상의 정수(ms)여야 합니다.", "입력 오류", MessageBoxButton.OK, MessageBoxImage.Warning);
+                return;
+            }
+
             var settings = new AppSettings
             {
                 Threshold = threshold,
                 ThresholdStrict = thresholdStrict,
                 DelayMs = delayMs,
                 RetryCount = retryCount,
+                PollIntervalMs = pollIntervalMs,
                 CaptureOption = SelectedCaptureOption
             };
 

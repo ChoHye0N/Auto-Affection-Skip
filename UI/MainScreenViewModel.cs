@@ -279,7 +279,7 @@ namespace UI
                 }
 
                 _countSecond++;
-                await Task.Delay(500, token);
+                await Task.Delay(_settings.PollIntervalMs, token);
             }
 
             if (_currentStep == MacroStep.ScanMessages)

@@ -10,7 +10,10 @@ namespace UI
         public double ThresholdStrict { get; set; } = 0.99;
         public int DelayMs { get; set; } = 1000;
         public int RetryCount { get; set; } = 5;
+        public int PollIntervalMs { get; set; } = DefaultPollIntervalMs; // 메시지 응답 대기 중 확인 간격
         public int CaptureOption { get; set; } = 0; // 0: BitBlt, 1: PrintWindow
+
+        public const int DefaultPollIntervalMs = 1000;
 
         private static readonly string SettingsDir =
             Path.Combine(Environment.GetFolderPath(Environment.SpecialFolder.ApplicationData), "AutoAffectionSkip");
